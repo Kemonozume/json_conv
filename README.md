@@ -157,7 +157,7 @@ accepted.
 class HasAnInt { int theInt; }
 
 HasAnInt invalid = god.deserialize('["some invalid input"]', HasAnInt);
-// Throws a NoSuchMethodError
+// Throws an error
 ```
 
 # Compatiblity with JsonObject
