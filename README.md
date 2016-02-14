@@ -15,9 +15,9 @@ The definitive solution for JSON in Dart.
     * [Serializing JSON](#serializing-json)
     * [Deserializing JSON](#deserializing-json)
         * [Deserializing to Classes](#deserializing-to-classes)
-*   [Compatibility with JsonObject](#compatibility-with-jsonobject)
-    *   [objectToJson](#objectToJson)
-    *   [enableJsonObjectDebugMessages](#enableJsonObjectDebugMessages)
+*   [Compatibility with JsonObject](#compatiblity-with-jsonobject)
+    *   [objectToJson](#objecttojson)
+    *   [enableJsonObjectDebugMessages](#enablejsonobjectdebugmessages)
 *   [Thanks](#thank-you-for-using-jsongod)
 
 # About
