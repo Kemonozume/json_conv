@@ -12,6 +12,7 @@ The definitive solution for JSON in Dart.
 *   [About](#about)
 *   [Installation](#installation)
 *   [Usage](#usage)
+    *   **IMPORTANT** - [Dart2JS Compatibility](#dart2js-compatibility)
     *   [Serializing JSON](#serializing-json)
     *   [Deserializing JSON](#deserializing-json)
         *   [Deserializing to Classes](#deserializing-to-classes)
@@ -67,6 +68,7 @@ God god = new God();
 // god.debug = true;
 ```
 
+## Dart2JS Compatibility
 **IMPORTANT - Reflection through dart:mirrors is not yet perfect in Dart2JS. Make sure
 to add a `@MirrorsUsed()` annotation to any classes you want to serialize/deserialize.**
 
@@ -77,7 +79,7 @@ library app;
 import 'dart:mirrors';
 ```
 
-`@MirrorUsed` documentation can be found [here](https://api.dartlang.org/1.14.2/dart-mirrors/MirrorsUsed-class.html).
+`@MirrorsUsed` documentation can be found [here](https://api.dartlang.org/1.14.2/dart-mirrors/MirrorsUsed-class.html).
 
 ## Serializing JSON
 
