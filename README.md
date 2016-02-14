@@ -1,6 +1,6 @@
 # JSON God
 
-![version 1.0.0-beta](https://img.shields.io/badge/version-1.0.0%20(beta)-blue.svg)
+![version 1.0.0-beta](https://img.shields.io/badge/version-1.0.0--beta-blue.svg)
 
 **NOT YET PRODUCTION READY**
 
