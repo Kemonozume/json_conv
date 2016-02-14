@@ -12,9 +12,9 @@ The definitive solution for JSON in Dart.
 *   [About](#about)
 *   [Installation](#installation)
 *   [Usage](#usage)
-    * [Serializing JSON](#serializing-json)
-    * [Deserializing JSON](#deserializing-json)
-        * [Deserializing to Classes](#deserializing-to-classes)
+    *   [Serializing JSON](#serializing-json)
+    *   [Deserializing JSON](#deserializing-json)
+        *   [Deserializing to Classes](#deserializing-to-classes)
 *   [Compatibility with JsonObject](#compatiblity-with-jsonobject)
     *   [objectToJson](#objecttojson)
     *   [enableJsonObjectDebugMessages](#enablejsonobjectdebugmessages)
@@ -50,7 +50,7 @@ JsonObject.
 
 I do not plan any major changes to the API, and future releases will be, for the
 most part, backwards-compatible. However, if you are paranoid, apply the version
-constraint `'^1.0.0'` instead of `'any`.
+constraint `'^1.0.0'` instead of `'any'`.
 
 # Usage
 
@@ -81,7 +81,6 @@ print(json);
 
 You can easily serialize classes, too. JSON God also supports classes as members.
 ```dart
-
 class A {
     String foo;
     A(this.foo);
@@ -171,7 +170,7 @@ main() async {
 ```
 
 It's marked as deprecated, because with JSON God you really should just stick with
-`god.serialize`
+`god.serialize`.
 
 ## enableJsonObjectDebugMessages
 

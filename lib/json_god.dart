@@ -1,3 +1,8 @@
+/// A handy library for JSON serialization and deserialization.
+///
+/// Exposes the God class, which exposes a clean API.
+///
+/// Source code: [here](https://github.com/thosakwe/json_god)
 library json_god;
 
 import 'dart:async';
