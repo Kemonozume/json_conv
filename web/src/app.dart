@@ -1,9 +1,10 @@
+library app;
+
 import 'dart:html';
 
-import '../packages/json_god/json_god.dart';
-//import 'package:json_god/json_god.dart';
-
-God god = new God();
+import '../test/serialization/serialization.dart';
+@MirrorsUsed(targets: 'app, test_serialization')
+import 'dart:mirrors';
 
 class Todo {
   int id;
@@ -15,11 +16,31 @@ class TodoList {
 }
 
 main() {
+  god
+    ..debug = window.confirm(
+        'Press OK to enable debug output in the console.\n\n'
+            'Be warned: It can be verbose!\nHowever, for testing purposes, this is a good thing.');
+  print(god.debug
+      ? "Enabled JSON God debug logging."
+      : "Debug logging is disabled. In case of error, please enable it.");
+  //Tests in console
+  testSerializingPrimitives();
+  testSerializingMaps();
+  testSerializingLists();
+  testSerializingByReflection();
+  querySelector('#serialization').text = 'Serialization Tests Complete';
+  querySelector('#deserialization').text = 'Running Deserialization Tests...';
+
+  testDeserialization();
+}
+
+testDeserialization() {
   bool result = deserializeSimple() && deserializeComplex();
 
-  if (result) window.alert("All tests were successful.");
-  else window.alert(
-      "One or more tests failed. Check the log for more information.");
+  if (result) querySelector('#deserialization').text =
+  "All Deserialization Tests Successful";
+  else querySelector('#deserialization').text =
+  "One or more deserialization tests failed. Check the log for more information.";
 }
 
 bool deserializeSimple() {
@@ -28,7 +49,7 @@ bool deserializeSimple() {
     print("Deserialization of simple objects: [YES]");
     return true;
   } else {
-    print("Deserialization of simple objects: [NO]");
+    window.console.error("Deserialization of simple objects: [NO]");
     return false;
   }
 }
@@ -43,7 +64,7 @@ bool deserializeComplex() {
     print("Deserialization of complex objects: [YES]");
     return true;
   } else {
-    print("Deserialization of complex objects: [NO]");
+    window.console.error("Deserialization of complex objects: [NO]");
     return false;
   }
 }

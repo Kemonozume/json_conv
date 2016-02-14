@@ -22,7 +22,9 @@ bool enableJsonObjectDebugMessages = false;
 
 /// In debug mode, logs a message to the console.
 void _log(message) {
-  if (enableJsonObjectDebugMessages) print('----- DEBUG: $message');
+  if (enableJsonObjectDebugMessages) {
+    print('----- DEBUG: $message');
+  }
 }
 
 /// Asynchronously serializes an object to JSON.

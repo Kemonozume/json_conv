@@ -1,6 +1,6 @@
 # JSON God
 
-![version 0.0.1](https://img.shields.io/badge/version-0.0.1-red.svg)
+![version 1.0.0-beta](https://img.shields.io/badge/version-1.0.0%20(beta)-blue.svg)
 
 **NOT YET PRODUCTION READY**
 
@@ -66,6 +66,18 @@ God god = new God();
 // CAUTION: It is very verbose.
 // god.debug = true;
 ```
+
+**IMPORTANT - Reflection through dart:mirrors is not yet perfect in Dart2JS. Make sure
+to add a `@MirrorsUsed()` annotation to any classes you want to serialize/deserialize.**
+
+```dart
+library app;
+
+@MirrorsUsed(targets: 'app')
+import 'dart:mirrors';
+```
+
+`@MirrorUsed` documentation can be found [here](https://api.dartlang.org/1.14.2/dart-mirrors/MirrorsUsed-class.html).
 
 ## Serializing JSON
 
