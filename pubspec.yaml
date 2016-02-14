@@ -1,0 +1,10 @@
+name: json_god
+version: 0.0.1
+authors:
+  - Tobe O <thosakwe@gmail.com>
+description: Easy JSON serialization and deserialization in Dart.
+homepage: https://github.com/thosakwe/json_god
+environment:
+  sdk: '>=1.0.0'
+dev_dependencies:
+  browser: any

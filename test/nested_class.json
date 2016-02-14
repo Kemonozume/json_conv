@@ -1,0 +1,22 @@
+{
+  "this_is_a": "Nested class",
+  "blaze": 420,
+  "nestedSimpleClass": {
+    "helloString": "world",
+    "helloInt": 4,
+    "helloDouble": 1.2,
+    "helloList": [
+      1,
+      2,
+      "three",
+      4.0,
+      [
+        5,
+        "six"
+      ]
+    ],
+    "helloMap": {
+      "foo": "bar"
+    }
+  }
+}
