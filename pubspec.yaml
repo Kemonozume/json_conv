@@ -1,5 +1,5 @@
 name: json_god
-version: 1.0.0-beta.4
+version: 1.0.0-beta.5
 authors:
   - Tobe O <thosakwe@gmail.com>
 description: Easy JSON serialization and deserialization in Dart.

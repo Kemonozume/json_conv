@@ -54,7 +54,7 @@ class God {
   String serialize(x) => _serializeToJson(x);
   
   /// Transforms an object into a Map serializable to JSON.
-  String serializeToMap(x) => _serializeObject(x);
+  Map serializeToMap(x) => _serializeObject(x);
 
   /// Determines whether to print debug output.
   bool get debug => enableJsonObjectDebugMessages;
