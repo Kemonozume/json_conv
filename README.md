@@ -1,8 +1,6 @@
 # JSON God
 
-![version 1.0.0-beta.5](https://img.shields.io/badge/version-1.0.0--beta.5-blue.svg)
-
-**NOT YET PRODUCTION READY**
+![version 1.0.0](https://img.shields.io/badge/version-1.0.0-green.svg)
 
 The definitive solution for JSON in Dart.
 
@@ -47,11 +45,7 @@ pub dependencies. If you use an old version of the SDK (<1.0), stick with
 JsonObject.
 
     dependencies:
-        json_god: any
-
-I do not plan any major changes to the API, and future releases will be, for the
-most part, backwards-compatible. However, if you are paranoid, apply the version
-constraint `'^1.0.0'` instead of `'any'`.
+        json_god: ^1.0.0
 
 # Usage
 

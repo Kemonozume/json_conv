@@ -1,6 +1,5 @@
 # See https://www.dartlang.org/tools/private-files.html
-.idea/workspace.xml
-.idea/tasks.xml
+.idea
 **/bower_components/
 
 # Files and directories created by pub
@@ -16,10 +15,10 @@ build/
 #  rules if you intend to use dart2js directly
 #  Convention is to use extension '.dart.js' for Dart compiled to Javascript to
 #  differentiate from explicit Javascript files)
-*.dart.js
+# *.dart.js
 *.part.js
 *.js.deps
-*.js.map
+# *.js.map
 *.info.json
 
 # Directory created by dartdoc
