@@ -193,4 +193,4 @@ Feel free to follow me on Twitter:
 
 [@thosakwe](http://twitter.com/thosakwe)
 or
-[@bazangtech](http://twitter.com/bazangtech)
+[@regios_tech](http://twitter.com/regios_tech)
