@@ -2,19 +2,27 @@ import 'dart:convert' show JSON;
 import 'package:json_god/json_god.dart' as god;
 import 'package:json_schema/json_schema.dart' show Schema;
 import 'package:test/test.dart';
+import 'shared.dart';
 
-class SampleNestedClass {
-  final String bar;
+main() {
+  god.debug = true;
 
-  const SampleNestedClass(String this.bar);
+  group('serialization', () {
+    test('serialize primitives', testSerializationOfPrimitives);
+
+    test('serialize dates', testSerializationOfDates);
+
+    test('serialize maps', testSerializationOfMaps);
+
+    test('serialize lists', testSerializationOfLists);
+
+    test('serialize via reflection', testSerializationViaReflection);
+
+    test('serialize with schema validation',
+        testSerializationWithSchemaValidation);
+  });
 }
 
-class SampleClass {
-  String hello;
-  List<SampleNestedClass> nested = [];
-
-  SampleClass([String this.hello]);
-}
 
 testSerializationOfPrimitives() {
   expect(god.serialize(1), equals("1"));
@@ -113,12 +121,10 @@ testSerializationWithSchemaValidation() async {
   Schema babelRcSchema = await Schema.createSchemaFromUrl(
       'http://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/babelrc.json');
 
-  Map babelRc = {
-    'presets': ['es2015', 'stage-0'],
-    'plugins': ['add-module-exports']
-  };
+  BabelRc babelRc = new BabelRc(
+      presets: ['es2015', 'stage-0'], plugins: ['add-module-exports']);
 
-  String json = god.serialize(babelRc, schema: babelRcSchema);
+  String json = god.serialize(babelRc);
   print(json);
 
   Map deserialized = JSON.decode(json);
@@ -138,24 +144,5 @@ testSerializationWithSchemaValidation() async {
 
     String json = god.serialize(babelRc, schema: babelRcSchema);
     print(json);
-  }, throwsException);
-}
-
-main() {
-  god.debug = true;
-
-  group('serialization', () {
-    test('serialize primitives', testSerializationOfPrimitives);
-
-    test('serialize dates', testSerializationOfDates);
-
-    test('serialize maps', testSerializationOfMaps);
-
-    test('serialize lists', testSerializationOfLists);
-
-    test('serialize via reflection', testSerializationViaReflection);
-
-    test('serialize with schema validation',
-        testSerializationWithSchemaValidation);
-  });
+  }, throwsA(new isInstanceOf<god.JsonValidationError>()));
 }

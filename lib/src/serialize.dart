@@ -17,7 +17,7 @@ String serialize(value, {Schema schema}) {
 
     if (validationResult) {
       return JSON.encode(serialized);
-    } else throw new ValidationError(
+    } else throw new JsonValidationError(
         "The given data does not follow the specified schema.",
         serialized,
         schema);
