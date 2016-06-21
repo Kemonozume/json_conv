@@ -11,4 +11,5 @@ part 'src/deserialize.dart';
 part 'src/validation.dart';
 part 'src/util.dart';
 
+/// Determines whether JSON God should print (very verbose) debug output!
 bool debug = false;

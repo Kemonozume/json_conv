@@ -1,9 +1,9 @@
 import 'package:json_god/json_god.dart';
 
 class SampleNestedClass {
-  final String bar;
+  String bar;
 
-  const SampleNestedClass(String this.bar);
+  SampleNestedClass([String this.bar]);
 }
 
 class SampleClass {
@@ -13,7 +13,6 @@ class SampleClass {
   SampleClass([String this.hello]);
 }
 
-
 @WithSchemaUrl(
     "http://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/babelrc.json")
 class BabelRc {
@@ -21,7 +20,8 @@ class BabelRc {
   List<String> plugins;
 
   BabelRc(
-      {List<String> this.presets: const[], List<String> this.plugins: const[]});
+      {List<String> this.presets: const [],
+      List<String> this.plugins: const []});
 }
 
 @WithSchema(const {
@@ -29,22 +29,15 @@ class BabelRc {
   "title": "Validated Sample Class",
   "description": "Sample schema for validation via JSON God",
   "type": "object",
-  "hello": const {
-    "description": "A friendly greeting.",
-    "type": "string"
-  },
+  "hello": const {"description": "A friendly greeting.", "type": "string"},
   "nested": const {
     "description": "A list of NestedSampleClass items within this instance.",
     "type": "array",
     "items": const {
       "type": "object",
-      "bar": const {
-        "description": "Filler text",
-        "type": "string"
-      }
+      "bar": const {"description": "Filler text", "type": "string"}
     }
   },
   "required": const ["hello", "nested"]
 })
-class ValidatedSampleClass {
-}
+class ValidatedSampleClass {}

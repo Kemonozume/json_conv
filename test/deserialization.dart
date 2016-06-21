@@ -9,8 +9,6 @@ main() {
   group('deserialization', () {
     test('deserialize primitives', testDeserializationOfPrimitives);
 
-    test('deserialize dates', testDeserializationOfDates);
-
     test('deserialize maps', testDeserializationOfMaps);
 
     test('deserialize lists + reflection',
@@ -29,19 +27,11 @@ testDeserializationOfPrimitives() {
   expect(god.deserialize("null"), equals(null));
 }
 
-testDeserializationOfDates() {
-  DateTime date = new DateTime.now();
-  String json = '{"date":"${date.toIso8601String()}"}';
-
-  Map deserialized = god.deserialize(json);
-  expect(deserialized['date'] is DateTime, equals(true));
-  expect(deserialized['date'].millisecondsSinceEpoch,
-      equals(date.millisecondsSinceEpoch));
-}
-
 testDeserializationOfMaps() {
-  String simpleJson = '{"hello":"world", "one": 1, "class": {"hello": "world"}}';
-  String nestedJson = '{"foo": {"bar": "baz", "funny": {"how": "life", "seems": 2, "hate": "us sometimes"}}}';
+  String simpleJson =
+      '{"hello":"world", "one": 1, "class": {"hello": "world"}}';
+  String nestedJson =
+      '{"foo": {"bar": "baz", "funny": {"how": "life", "seems": 2, "hate": "us sometimes"}}}';
   Map simple = god.deserialize(simpleJson);
   Map nested = god.deserialize(nestedJson);
 
@@ -75,8 +65,8 @@ testDeserializationOfListsAsWellAsViaReflection() {
   ]
   ''';
 
-  List<SampleClass> list = god.deserialize(
-      json, outputType: new List<SampleClass>().runtimeType);
+  List<SampleClass> list =
+      god.deserialize(json, outputType: new List<SampleClass>().runtimeType);
   SampleClass first = list[0];
   SampleClass second = list[1];
 
@@ -96,17 +86,18 @@ testDeserializationOfListsAsWellAsViaReflection() {
 testDeserializationWithSchemaValidation() async {
   Schema babelRcSchema = await Schema.createSchemaFromUrl(
       'http://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/babelrc.json');
-  String babelRcJson = '{"presets":["es2015","stage-0"],"plugins":["add-module-exports"]}';
+  String babelRcJson =
+      '{"presets":["es2015","stage-0"],"plugins":["add-module-exports"]}';
 
   Map deserialized = god.deserialize(babelRcJson, outputType: BabelRc);
 
-  expect(deserialized['presets'] is List, equals(true));
-  expect(deserialized['presets'].length, equals(2));
-  expect(deserialized['presets'][0], equals('es2015'));
-  expect(deserialized['presets'][1], equals('stage-0'));
-  expect(deserialized['plugins'] is List, equals(true));
-  expect(deserialized['plugins'].length, equals(1));
-  expect(deserialized['plugins'][0], equals('add-module-exports'));
+  expect(deserialized.presets is List, equals(true));
+  expect(deserialized.presets.length, equals(2));
+  expect(deserialized.presets[0], equals('es2015'));
+  expect(deserialized.presets[1], equals('stage-0'));
+  expect(deserialized.plugins is List, equals(true));
+  expect(deserialized.plugins.length, equals(1));
+  expect(deserialized.plugins[0], equals('add-module-exports'));
 
   expect(() {
     String babelRcJson = '{"presets":"Hello, world!"}';
