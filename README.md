@@ -112,6 +112,19 @@ HasAnInt invalid = god.deserialize('["some invalid input"]', HasAnInt);
 // Throws an error
 ```
 
+# Validation
+You can also enforce validation rules, thanks to the `json_schema` package.
+Both `serialize` and `deserialize` support a named parameter, `schema`. Alternatively,
+use the `WithSchema` or `WithSchemaUrl` annotations on your classes.
+
+```dart
+@WithSchema(const {})
+
+@WithSchemaUrl("url")
+```
+
+An exception will be thrown if validation fails.
+
 # Thank you for using JSON God
 
 Thank you for using this library. I hope you like it.

@@ -23,7 +23,6 @@ main() {
   });
 }
 
-
 testSerializationOfPrimitives() {
   expect(god.serialize(1), equals("1"));
   expect(god.serialize(1.4), equals("1.4"));
@@ -34,9 +33,7 @@ testSerializationOfPrimitives() {
 
 testSerializationOfDates() {
   DateTime date = new DateTime.now();
-  String json = god.serialize({
-    'date': date
-  });
+  String json = god.serialize({'date': date});
 
   print(json);
 
@@ -50,11 +47,7 @@ testSerializationOfMaps() {
   Map nested = JSON.decode(god.serialize({
     'foo': {
       'bar': 'baz',
-      'funny': {
-        'how': 'life',
-        'seems': 2,
-        'hate': 'us sometimes'
-      }
+      'funny': {'how': 'life', 'seems': 2, 'hate': 'us sometimes'}
     }
   }));
 
@@ -70,12 +63,10 @@ testSerializationOfMaps() {
 
 testSerializationOfLists() {
   List pandorasBox = [
-    1, "2",
-    {
-      "num": 3,
-      "four": new SampleClass('five')},
-    new SampleClass('six')
-      ..nested.add(new SampleNestedClass('seven'))
+    1,
+    "2",
+    {"num": 3, "four": new SampleClass('five')},
+    new SampleClass('six')..nested.add(new SampleNestedClass('seven'))
   ];
   String json = god.serialize(pandorasBox);
   print(json);
@@ -138,9 +129,7 @@ testSerializationWithSchemaValidation() async {
   expect(deserialized['plugins'][0], equals('add-module-exports'));
 
   expect(() {
-    Map babelRc = {
-      'presets': 'Hello, world!'
-    };
+    Map babelRc = {'presets': 'Hello, world!'};
 
     String json = god.serialize(babelRc, schema: babelRcSchema);
     print(json);
