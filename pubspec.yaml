@@ -5,9 +5,9 @@ authors:
 description: Easy JSON serialization and deserialization in Dart.
 homepage: https://github.com/thosakwe/json_god
 environment:
-  sdk: '>=1.0.0'
+  sdk: ">=1.0.0"
 dependencies:
-  json_schema: ^1.0.4
+  json_schema: ">=1.0.4 <2.0.0"
 dev_dependencies:
   browser: "0.10.0+2"
   test: ^0.12.13+5
