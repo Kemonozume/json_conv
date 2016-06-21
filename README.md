@@ -1,64 +1,22 @@
-# JSON God
+# JSON God v2
 
-![version 1.0.0](https://img.shields.io/badge/version-1.0.0-green.svg)
+![version 2.0.0-beta](https://img.shields.io/badge/version-2.0.0--beta-blue.svg)
 
-The definitive solution for JSON in Dart.
+The ***new and improved*** definitive solution for JSON in Dart.
 
-### Contents
-
-*   [JSON God](#json-god)
-*   [About](#about)
-*   [Installation](#installation)
-*   [Usage](#usage)
-    *   **IMPORTANT** - [Dart2JS Compatibility](#dart2js-compatibility)
-    *   [Serializing JSON](#serializing-json)
-    *   [Deserializing JSON](#deserializing-json)
-        *   [Deserializing to Classes](#deserializing-to-classes)
-*   [Compatibility with JsonObject](#compatiblity-with-jsonobject)
-    *   [objectToJson](#objecttojson)
-    *   [enableJsonObjectDebugMessages](#enablejsonobjectdebugmessages)
-*   [Thanks](#thank-you-for-using-json-god)
-
-# About
-
-I think Dart is really freaking cool, and far better than Javascript. However, coming
-from a Javascript background, I really am not a fan of native JSON support only
-coming in the form of Maps. What about classes? What if I want to serialize my
-precious objects? What if I want to validate JSON input?
-
-My main problem with Dart is that it does not natively support this. And the
-standard [JsonObject Library](https://github.com/chrisbu/dartwatch-JsonObject)
-is outdated and incompatible with SDK 1.0+.
-
-To remedy this, I wrote JSON God. JSON God exposes a class called God.
-God contains just two methods: *serialize* and *deserialize*. You can call these
-synchronously, and **even in the browser**. Cool, right?
-
-I made a few provisions for compatibility with JsonObject, too.
-
-**Bow down to JSON God.**
 
 # Installation
-
-To install JSON God for your Dart project, simply add json_god to your
-pub dependencies. If you use an old version of the SDK (<1.0), stick with
-JsonObject.
-
     dependencies:
-        json_god: ^1.0.0
+        json_god: ^2.0.0-beta
 
 # Usage
 
-Serialization and deserialization are run through the `God` class. Instantiate a new
-`God` to begin.
+It is recommended to import the library under an alias, i.e., `god`.
 
 ```dart
-import 'package:json_god/json_god.dart';
+import 'package:json_god/json_god.dart' as god;
 
-God god = new God();
-
-// Set .debug to true to print debug output.
-// CAUTION: It is very verbose.
+// Set .debug to true to print VERY VERBOSE debug output.
 // god.debug = true;
 ```
 
@@ -154,43 +112,24 @@ HasAnInt invalid = god.deserialize('["some invalid input"]', HasAnInt);
 // Throws an error
 ```
 
-# Compatiblity with JsonObject
-
-As mentioned before, there is some compatibility with JsonObject for projects that
-already use that library.
-
-## objectToJson
-
-JsonObject, as I said before, is old, and uses the older `Future` API. It exposes
-a `Future<String>` called `objectToJson` that serializes an object. I felt like this
-was worth keeping, so I kept it.
+# Validation
+You can also enforce validation rules, thanks to the `json_schema` package.
+Both `serialize` and `deserialize` support a named parameter, `schema`. Alternatively,
+use the `WithSchema` or `WithSchemaUrl` annotations on your classes.
 
 ```dart
-main() async {
-    Map map = {"hello": "world"};
+@WithSchema(const {})
 
-    // Using await
-    String json = await objectToJson(map);
-
-    // Using Future.then
-    objectToJson(map).then(print);
-}
+@WithSchemaUrl("url")
 ```
 
-It's marked as deprecated, because with JSON God you really should just stick with
-`god.serialize`.
-
-## enableJsonObjectDebugMessages
-
-This boolean flag is used internally by the God class, and is the equivalent of
-`god.debug`.
+An exception will be thrown if validation fails.
 
 # Thank you for using JSON God
 
 Thank you for using this library. I hope you like it.
 
-Feel free to follow me on Twitter:
-
+Feel free to follow me on Twitter: 
 [@thosakwe](http://twitter.com/thosakwe)
-or
-[@regios_tech](http://twitter.com/regios_tech)
+
+Or, check out [my blog](http://blog.thosakwe.com)
