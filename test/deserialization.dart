@@ -9,21 +9,21 @@ main() {
   group('deserialization', () {
     test('deserialize primitives', testDeserializationOfPrimitives);
 
-    test('serialize dates', testDeserializationOfDates);
+    test('deserialize dates', testDeserializationOfDates);
 
-    test('serialize maps', testDeserializationOfMaps);
+    test('deserialize maps', testDeserializationOfMaps);
 
-    test('serialize lists + reflection',
+    test('deserialize lists + reflection',
         testDeserializationOfListsAsWellAsViaReflection);
 
-    test('serialize with schema validation',
+    test('deserialize with schema validation',
         testDeserializationWithSchemaValidation);
   });
 }
 
 testDeserializationOfPrimitives() {
-  expect(god.deserialize('"1"'), equals(1));
-  expect(god.deserialize('"1.4"'), equals(1.4));
+  expect(god.deserialize('1'), equals(1));
+  expect(god.deserialize('1.4'), equals(1.4));
   expect(god.deserialize('"Hi!"'), equals("Hi!"));
   expect(god.deserialize("true"), equals(true));
   expect(god.deserialize("null"), equals(null));
