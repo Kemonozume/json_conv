@@ -1,6 +1,5 @@
 import 'dart:convert' show JSON;
 import 'package:json_god/json_god.dart' as god;
-import 'package:json_schema/json_schema.dart' show Schema;
 import 'package:test/test.dart';
 import 'shared.dart';
 
@@ -109,9 +108,6 @@ testSerializationViaReflection() {
 }
 
 testSerializationWithSchemaValidation() async {
-  Schema babelRcSchema = await Schema.createSchemaFromUrl(
-      'http://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/babelrc.json');
-
   BabelRc babelRc = new BabelRc(
       presets: ['es2015', 'stage-0'], plugins: ['add-module-exports']);
 
@@ -128,10 +124,8 @@ testSerializationWithSchemaValidation() async {
   expect(deserialized['plugins'].length, equals(1));
   expect(deserialized['plugins'][0], equals('add-module-exports'));
 
-  expect(() {
-    Map babelRc = {'presets': 'Hello, world!'};
+  Map babelRc2 = {'presets': 'Hello, world!'};
 
-    String json = god.serialize(babelRc, schema: babelRcSchema);
-    print(json);
-  }, throwsA(new isInstanceOf<god.JsonValidationError>()));
+  String json2 = god.serialize(babelRc);
+  print(json2);
 }

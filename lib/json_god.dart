@@ -3,7 +3,6 @@ library json_god;
 
 import 'dart:convert';
 
-import 'package:json_schema/json_schema.dart' show Schema;
 import 'src/reflection.dart' as reflection;
 
 part 'src/serialize.dart';

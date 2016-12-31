@@ -1,30 +1,14 @@
 part of json_god;
 
 /// Serializes any arbitrary Dart datum to JSON. Supports schema validation.
-String serialize(value, {Schema schema}) {
+String serialize(value) {
   var serialized = serializeObject(value);
 
-  if (schema != null) {
-    if (debug) {
-      print("Serialization result: $serialized");
-      print("Validating serialization result via this schema: $schema");
-    }
+  if (debug) {
+    print('Serialization result: $serialized');
+  }
 
-    bool validationResult = schema.validate(serialized);
-
-    if (debug) {
-      print("Validation result: ${validationResult ? 'SUCCESS' : 'FAILURE'}");
-    }
-
-    if (validationResult) {
-      return JSON.encode(serialized);
-    } else
-      throw new JsonValidationError(
-          "The given data does not follow the specified schema.",
-          serialized,
-          schema);
-  } else
-    return JSON.encode(serialized);
+  return JSON.encode(serialized);
 }
 
 /// Transforms any Dart datum into a value acceptable to JSON.encode.
@@ -54,7 +38,7 @@ serializeObject(value) {
 
     return serializeMap(value);
   } else
-    return reflection.serialize(value, serializeObject, debug);
+    return serializeObject(reflection.serialize(value, serializeObject, debug));
 }
 
 /// Recursively transforms a Map and its children into JSON-serializable data.

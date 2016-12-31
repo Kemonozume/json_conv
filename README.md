@@ -69,6 +69,8 @@ main() {
 // Output: {"hello":"world","nested":{"foo":"bar"}}
 ```
 
+If a class has a `toJson` method, it will be called instead.
+
 ## Deserializing JSON
 
 Deserialization is equally easy, and is provided through `god.deserialize`.
@@ -81,6 +83,8 @@ int three = god.deserialize("3");
 
 JSON God lets you deserialize JSON into an instance of any type. Simply pass the
 type as the second argument to `god.deserialize`.
+
+If the class has a `fromJson` constructor, it will be called instead.
 
 ```dart
 class Child {

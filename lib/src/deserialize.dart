@@ -1,31 +1,16 @@
 part of json_god;
 
-/// Deserializes a JSON string into a Dart datum. Supports schema validation.
+/// Deserializes a JSON string into a Dart datum.
 ///
 /// You can also provide an output Type to attempt to serialize the JSON into.
-deserialize(String json, {Type outputType, Schema schema}) {
+deserialize(String json, {Type outputType}) {
   var deserialized = deseriaizeJson(json, outputType: outputType);
 
   if (debug) {
     print("Deserialization result: $deserialized");
   }
 
-  if (schema != null) {
-    bool validationResult = schema.validate(deserialized);
-
-    if (debug) {
-      print("Validation result: ${validationResult ? 'SUCCESS' : 'FAILURE'}");
-    }
-
-    if (validationResult) {
-      return deserialized;
-    } else
-      throw new JsonValidationError(
-          "The given data does not follow the specified schema.",
-          deserialized,
-          schema);
-  } else
-    return deserialized;
+  return deserialized;
 }
 
 /// Deserializes JSON into data, without validating it.

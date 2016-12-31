@@ -1,5 +1,4 @@
 import 'package:json_god/json_god.dart' as god;
-import 'package:json_schema/json_schema.dart' show Schema;
 import 'package:test/test.dart';
 import 'shared.dart';
 
@@ -84,12 +83,10 @@ testDeserializationOfListsAsWellAsViaReflection() {
 }
 
 testDeserializationWithSchemaValidation() async {
-  Schema babelRcSchema = await Schema.createSchemaFromUrl(
-      'http://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/babelrc.json');
   String babelRcJson =
       '{"presets":["es2015","stage-0"],"plugins":["add-module-exports"]}';
 
-  Map deserialized = god.deserialize(babelRcJson, outputType: BabelRc);
+  BabelRc deserialized = god.deserialize(babelRcJson, outputType: BabelRc);
 
   expect(deserialized.presets is List, equals(true));
   expect(deserialized.presets.length, equals(2));
@@ -98,9 +95,4 @@ testDeserializationWithSchemaValidation() async {
   expect(deserialized.plugins is List, equals(true));
   expect(deserialized.plugins.length, equals(1));
   expect(deserialized.plugins[0], equals('add-module-exports'));
-
-  expect(() {
-    String babelRcJson = '{"presets":"Hello, world!"}';
-    god.deserialize(babelRcJson, schema: babelRcSchema);
-  }, throwsA(new isInstanceOf<god.JsonValidationError>()));
 }
