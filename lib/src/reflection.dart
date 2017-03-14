@@ -22,7 +22,7 @@ final _convMap = <Type, Function>{
   double: _bytesToDouble
 };
 
-typedef int Seek(List<int> l, int start, {bool end});
+typedef int Seek(int start, {bool end});
 final _seekMap = <Type, Seek>{
   bool: _seekNumberOrBool,
   int: _seekNumberOrBool,
@@ -144,19 +144,16 @@ Uint8List stringToByteArray(String json) {
 
 //check if we can drop toList()
 //FIXME
-double _bytesToDouble(List<int> l) {
-  return double.parse(UTF8.decode(l));
+double _bytesToDouble(String str) {
+  return double.parse(str);
 }
 
-int _bytesToInt(List<int> l) {
-  return int.parse(UTF8.decode(l));
+int _bytesToInt(String str) {
+  return int.parse(str);
 }
 
-String _bytesToString(List<int> l) {
-  if (l.length == 2) return "";
-  l.remove(_quote);
-  l.remove(_quote);
-  return UTF8.decode(l);
+String _bytesToString(String str) {
+  return str.substring(1, str.length - 1);
 }
 
 bool _bytesToBool(dynamic l) {
@@ -165,24 +162,25 @@ bool _bytesToBool(dynamic l) {
   return false;
 }
 
-int _seekList(List<int> l, int start, {bool end: false}) {
+int _seekList(int start, {bool end: false}) {
   int count = 0; //used to skip nested arrays as well;
   bool inQuote = false;
-  for (int c = start; c < l.length; c++) {
-    if (l[c] == _quote) {
+  for (int c = start; c < debugJson.length; c++) {
+    int char = debugJson.codeUnitAt(c);
+    if (char == _quote) {
       if (inQuote == true) {
         inQuote = false;
       } else {
         inQuote = true;
       }
     }
-    if (l[c] == _openArray) {
+    if (char == _openArray) {
       if (inQuote) continue;
       if (!end) return c;
       count++;
       continue;
     }
-    if (l[c] == _closeArray) {
+    if (char == _closeArray) {
       if (inQuote) continue;
       if (count == 0) {
         return c + 1;
@@ -194,9 +192,9 @@ int _seekList(List<int> l, int start, {bool end: false}) {
       "could not find start or end of list from position $start, end: $end");
 }
 
-int _seekString(List<int> l, int start, {bool end: false}) {
-  for (int c = start; c < l.length; c++) {
-    if (l[c] == _quote) {
+int _seekString(int start, {bool end: false}) {
+  for (int c = start; c < debugJson.length; c++) {
+    if (debugJson.codeUnitAt(c) == _quote) {
       if (end) return c + 1;
       return c;
     }
@@ -205,18 +203,19 @@ int _seekString(List<int> l, int start, {bool end: false}) {
       "could not find start or end of string from position $start, end: $end");
 }
 
-int _seekClass(List<int> l, int start, {bool end: false}) {
+int _seekClass(int start, {bool end: false}) {
   int count = 0;
   bool inQuote = false;
-  for (int c = start; c < l.length; c++) {
-    if (l[c] == _quote) {
+  for (int c = start; c < debugJson.length; c++) {
+    int char = debugJson.codeUnitAt(c);
+    if (char == _quote) {
       if (inQuote == true) {
         inQuote = false;
       } else {
         inQuote = true;
       }
     }
-    if (l[c] == _openClass) {
+    if (char == _openClass) {
       if (inQuote) continue;
       if (end) {
         count++;
@@ -225,7 +224,7 @@ int _seekClass(List<int> l, int start, {bool end: false}) {
       }
     }
 
-    if (l[c] == _closeClass) {
+    if (char == _closeClass) {
       if (inQuote) continue;
       if (count == 0) {
         return c + 1;
@@ -239,25 +238,26 @@ int _seekClass(List<int> l, int start, {bool end: false}) {
       "could not find start or end of class from position $start, end: $end");
 }
 
-int _seekNumberOrBool(List<int> l, int start, {bool end: false}) {
+int _seekNumberOrBool(int start, {bool end: false}) {
   bool inQuote = false;
-  for (int c = start; c < l.length; c++) {
-    if (l[c] == _quote) {
+  for (int c = start; c < debugJson.length; c++) {
+    int char = debugJson.codeUnitAt(c);
+    if (char == _quote) {
       if (inQuote == true) {
         inQuote = false;
       } else {
         inQuote = true;
       }
     }
-    if (l[c] == _comma ||
-        l[c] == _white ||
-        l[c] == _newLine ||
-        l[c] == _colon ||
-        l[c] == _quote ||
-        l[c] == _closeArray ||
-        l[c] == _closeClass ||
-        l[c] == _openArray ||
-        l[c] == _openClass) {
+    if (char == _comma ||
+        char == _white ||
+        char == _newLine ||
+        char == _colon ||
+        char == _quote ||
+        char == _closeArray ||
+        char == _closeClass ||
+        char == _openArray ||
+        char == _openClass) {
       if (end) {
         return c;
       }
@@ -266,7 +266,7 @@ int _seekNumberOrBool(List<int> l, int start, {bool end: false}) {
       if (!end && !inQuote) return c;
     }
   }
-  return l.length;
+  return debugJson.length;
 }
 
 class TypeWrap {
@@ -276,7 +276,7 @@ class TypeWrap {
   TypeWrap(this.type, this.end);
 }
 
-TypeWrap _seekType(List<int> l, int start) {
+TypeWrap _seekType(int start) {
   Type type;
   int end = -1;
   int sstart = -1;
@@ -284,11 +284,11 @@ TypeWrap _seekType(List<int> l, int start) {
     try {
       int starttmp = 0;
       int endtmp = 0;
-      starttmp = f(l, start);
+      starttmp = f(start);
       if (sstart == -1) {
         sstart = starttmp;
       }
-      endtmp = f(l, starttmp + 1, end: true);
+      endtmp = f(starttmp + 1, end: true);
       if (endtmp - starttmp > end && starttmp <= sstart) {
         end = endtmp - starttmp;
         sstart = starttmp;
@@ -300,10 +300,10 @@ TypeWrap _seekType(List<int> l, int start) {
     return new TypeWrap(Map, end);
   }
   if (type == num || type == bool || type == int) {
-    if (l.contains(_boolTrue)) {
+    if (debugJson.substring(start, end).contains(_boolTrue)) {
       return new TypeWrap(bool, end);
     }
-    if (l.contains(_boolFalse)) {
+    if (debugJson.substring(start, end).contains(_boolFalse)) {
       return new TypeWrap(bool, end);
     }
     return new TypeWrap(num, end);
@@ -402,7 +402,7 @@ void test13() {
 String debugJson;
 T decode<T>(String json, Type type) {
   debugJson = json;
-  var res = _consumeList<T>(UTF8.encode(json), type);
+  var res = _consume<T>(type);
   return res.data;
 }
 
@@ -413,8 +413,7 @@ class _Result<T> {
   _Result(this.data, this.end);
 }
 
-_Result<T> _consumeList<T>(List<int> list, Type type,
-    {int position: 0, bool onlyOne: false}) {
+_Result<T> _consume<T>(Type type, {int position: 0, bool onlyOne: false}) {
   final info = generateElements(type);
   ClassMirror classMirror = reflectType(type);
   InstanceMirror instance;
@@ -431,8 +430,8 @@ _Result<T> _consumeList<T>(List<int> list, Type type,
   String key;
 
   int idx = position;
-  while (idx < list.length) {
-    int char = list[idx];
+  while (idx < debugJson.length) {
+    int char = debugJson.codeUnitAt(idx);
     switch (char) {
       case _openClass:
         break;
@@ -444,7 +443,7 @@ _Result<T> _consumeList<T>(List<int> list, Type type,
         break;
 
       case _openArray:
-        var endArray = _seekMap[List](list, idx + 1, end: true) - 1;
+        var endArray = _seekMap[List](idx + 1, end: true) - 1;
         int length = endArray - idx;
         Type arrayType;
 
@@ -466,16 +465,15 @@ _Result<T> _consumeList<T>(List<int> list, Type type,
         int end = 0;
         if (_isPrimitive(arrayType)) {
           while (idx < endArray) {
-            int start = _seekMap[arrayType](list, idx);
-            end = _seekMap[arrayType](list, start + 1, end: true);
-            valueList
-                .add(_convMap[arrayType](list.getRange(start, end).toList()));
+            int start = _seekMap[arrayType](idx);
+            end = _seekMap[arrayType](start + 1, end: true);
+            valueList.add(_convMap[arrayType](debugJson.substring(start, end)));
             idx = end + 1;
           }
         } else {
           //array of arrays???
           while (idx < endArray) {
-            var wat = _consumeList<arrayType>(list, arrayType,
+            var wat = _consume<arrayType>(arrayType,
                 position: idx + 1, onlyOne: true);
             valueList.add(wat.data);
             idx = wat.end + 1;
@@ -495,8 +493,8 @@ _Result<T> _consumeList<T>(List<int> list, Type type,
         break;
       case _quote: //read key, read type of ele
         int start = idx;
-        int end = _seekMap[String](list, start + 1, end: true);
-        key = _convMap[String](list.getRange(start, end).toList());
+        int end = _seekMap[String](start + 1, end: true);
+        key = _convMap[String](debugJson.substring(start, end));
         idx = end;
 
         Type valueType;
@@ -506,26 +504,26 @@ _Result<T> _consumeList<T>(List<int> list, Type type,
         if (ele != null) {
           valueType = ele.type;
         } else if (info.isMap) {
-          TypeWrap tw = _seekType(list, idx);
+          TypeWrap tw = _seekType(idx);
           valueType = tw.type;
         } else {
-          TypeWrap tw = _seekType(list, idx);
+          TypeWrap tw = _seekType(idx);
           idx = tw.end + 1;
           continue;
         }
         if (_isPrimitive(valueType)) {
-          int start = _seekMap[valueType](list, idx);
-          int end = _seekMap[valueType](list, start + 1, end: true);
+          int start = _seekMap[valueType](idx);
+          int end = _seekMap[valueType](start + 1, end: true);
           if (info.isMap) {
-            m[key] = _convMap[valueType](list.getRange(start, end).toList());
+            m[key] = _convMap[valueType](debugJson.substring(start, end));
           } else {
             instance.setField(ele.symbol,
-                _convMap[valueType](list.getRange(start, end).toList()));
+                _convMap[valueType](debugJson.substring(start, end)));
           }
           idx = end;
         } else {
-          var wat = _consumeList<valueType>(list, valueType,
-              position: idx, onlyOne: true);
+          var wat =
+              _consume<valueType>(valueType, position: idx, onlyOne: true);
           if (info.isMap) {
             m[key] = wat.data;
           } else {

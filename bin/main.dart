@@ -129,16 +129,18 @@ void main() {
 
   Stopwatch w = new Stopwatch();
   w.start();
-  for (int i = 0; i < 5000; i++) {
+  for (int i = 0; i < 1000000; i++) {
     var b = decode<Test6>(list, Test6);
+    //print(b);
   }
   w.stop();
   print("decode took: ${w.elapsedMilliseconds}");
 
   w.reset();
   w.start();
-  for (int i = 0; i < 5000; i++) {
+  for (int i = 0; i < 1000000; i++) {
     var b = god.deseriaizeJson(list, outputType: Test6);
+    //print(b);
   }
   w.stop();
   print("json god took: ${w.elapsedMilliseconds}");
