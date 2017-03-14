@@ -1,10 +1,10 @@
-import 'package:json_god/json_god.dart' as god;
+import 'package:json_conv/json_conv.dart' as conv;
 import 'package:test/test.dart';
 
 main() {
   test('fromJson', () {
-    god.debug = true;
-    Foo foo = god.deserialize('{"bar":"baz"}', outputType: Foo);
+    conv.debug = false;
+    Foo foo = conv.deserialize('{"bar":"baz"}', outputType: Foo);
 
     expect(foo, new isInstanceOf<Foo>());
     expect(foo.text, equals('baz'));
@@ -12,7 +12,7 @@ main() {
 
   test('toJson', () {
     var foo = new Foo(text: 'baz');
-    var data = god.serializeObject(foo);
+    var data = conv.serializeObject(foo);
     expect(data, equals({'bar': 'baz', 'foo': 'poobaz'}));
   });
 }

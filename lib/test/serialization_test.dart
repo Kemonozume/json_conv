@@ -1,10 +1,10 @@
 import 'dart:convert' show JSON;
-import 'package:json_god/json_god.dart' as god;
+import 'package:json_conv/json_conv.dart' as conv;
 import 'package:test/test.dart';
 import 'shared.dart';
 
 main() {
-  god.debug = true;
+  conv.debug = false;
 
   group('serialization', () {
     test('serialize primitives', testSerializationOfPrimitives);
@@ -23,16 +23,16 @@ main() {
 }
 
 testSerializationOfPrimitives() {
-  expect(god.serialize(1), equals("1"));
-  expect(god.serialize(1.4), equals("1.4"));
-  expect(god.serialize("Hi!"), equals('"Hi!"'));
-  expect(god.serialize(true), equals("true"));
-  expect(god.serialize(null), equals("null"));
+  expect(conv.serialize(1), equals("1"));
+  expect(conv.serialize(1.4), equals("1.4"));
+  expect(conv.serialize("Hi!"), equals('"Hi!"'));
+  expect(conv.serialize(true), equals("true"));
+  expect(conv.serialize(null), equals("null"));
 }
 
 testSerializationOfDates() {
   DateTime date = new DateTime.now();
-  String json = god.serialize({'date': date});
+  String json = conv.serialize({'date': date});
 
   print(json);
 
@@ -41,9 +41,9 @@ testSerializationOfDates() {
 }
 
 testSerializationOfMaps() {
-  Map simple = JSON.decode(god.serialize(
+  Map simple = JSON.decode(conv.serialize(
       {'hello': 'world', 'one': 1, 'class': new SampleClass('world')}));
-  Map nested = JSON.decode(god.serialize({
+  Map nested = JSON.decode(conv.serialize({
     'foo': {
       'bar': 'baz',
       'funny': {'how': 'life', 'seems': 2, 'hate': 'us sometimes'}
@@ -67,7 +67,7 @@ testSerializationOfLists() {
     {"num": 3, "four": new SampleClass('five')},
     new SampleClass('six')..nested.add(new SampleNestedClass('seven'))
   ];
-  String json = god.serialize(pandorasBox);
+  String json = conv.serialize(pandorasBox);
   print(json);
 
   List deserialized = JSON.decode(json);
@@ -95,7 +95,7 @@ testSerializationViaReflection() {
     sample.nested.add(new SampleNestedClass('baz'));
   }
 
-  String json = god.serialize(sample);
+  String json = conv.serialize(sample);
   print(json);
 
   Map deserialized = JSON.decode(json);
@@ -111,7 +111,7 @@ testSerializationWithSchemaValidation() async {
   BabelRc babelRc = new BabelRc(
       presets: ['es2015', 'stage-0'], plugins: ['add-module-exports']);
 
-  String json = god.serialize(babelRc);
+  String json = conv.serialize(babelRc);
   print(json);
 
   Map deserialized = JSON.decode(json);
@@ -126,6 +126,6 @@ testSerializationWithSchemaValidation() async {
 
   Map babelRc2 = {'presets': 'Hello, world!'};
 
-  String json2 = god.serialize(babelRc);
+  String json2 = conv.serialize(babelRc);
   print(json2);
 }

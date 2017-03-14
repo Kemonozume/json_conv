@@ -1,4 +1,4 @@
-part of json_god;
+part of json_conv;
 
 /// Serializes any arbitrary Dart datum to JSON. Supports schema validation.
 String serialize(value) {
@@ -38,7 +38,7 @@ serializeObject(value) {
 
     return serializeMap(value);
   } else
-    return serializeObject(reflection.serialize(value, serializeObject, debug));
+    return serializeObject(_serialize(value, serializeObject, debug));
 }
 
 /// Recursively transforms a Map and its children into JSON-serializable data.

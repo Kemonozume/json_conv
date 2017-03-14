@@ -1,4 +1,4 @@
-part of json_god;
+part of json_conv;
 
 /// Thrown when schema validation fails.
 class JsonValidationError implements Exception {

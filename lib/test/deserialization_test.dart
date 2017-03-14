@@ -1,9 +1,9 @@
-import 'package:json_god/json_god.dart' as god;
+import 'package:json_conv/json_conv.dart' as conv;
 import 'package:test/test.dart';
 import 'shared.dart';
 
 main() {
-  god.debug = true;
+  conv.debug = false;
 
   group('deserialization', () {
     test('deserialize primitives', testDeserializationOfPrimitives);
@@ -19,11 +19,11 @@ main() {
 }
 
 testDeserializationOfPrimitives() {
-  expect(god.deserialize('1'), equals(1));
-  expect(god.deserialize('1.4'), equals(1.4));
-  expect(god.deserialize('"Hi!"'), equals("Hi!"));
-  expect(god.deserialize("true"), equals(true));
-  expect(god.deserialize("null"), equals(null));
+  expect(conv.deserialize('1'), equals(1));
+  expect(conv.deserialize('1.4'), equals(1.4));
+  expect(conv.deserialize('"Hi!"'), equals("Hi!"));
+  expect(conv.deserialize("true"), equals(true));
+  expect(conv.deserialize("null"), equals(null));
 }
 
 testDeserializationOfMaps() {
@@ -31,8 +31,8 @@ testDeserializationOfMaps() {
       '{"hello":"world", "one": 1, "class": {"hello": "world"}}';
   String nestedJson =
       '{"foo": {"bar": "baz", "funny": {"how": "life", "seems": 2, "hate": "us sometimes"}}}';
-  Map simple = god.deserialize(simpleJson);
-  Map nested = god.deserialize(nestedJson);
+  Map simple = conv.deserialize(simpleJson);
+  Map nested = conv.deserialize(nestedJson);
 
   expect(simple['hello'], equals('world'));
   expect(simple['one'], equals(1));
@@ -65,7 +65,7 @@ testDeserializationOfListsAsWellAsViaReflection() {
   ''';
 
   List<SampleClass> list =
-      god.deserialize(json, outputType: new List<SampleClass>().runtimeType);
+      conv.deserialize(json, outputType: new List<SampleClass>().runtimeType);
   SampleClass first = list[0];
   SampleClass second = list[1];
 
@@ -86,7 +86,7 @@ testDeserializationWithSchemaValidation() async {
   String babelRcJson =
       '{"presets":["es2015","stage-0"],"plugins":["add-module-exports"]}';
 
-  BabelRc deserialized = god.deserialize(babelRcJson, outputType: BabelRc);
+  BabelRc deserialized = conv.deserialize(babelRcJson, outputType: BabelRc);
 
   expect(deserialized.presets is List, equals(true));
   expect(deserialized.presets.length, equals(2));

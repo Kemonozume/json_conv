@@ -1,4 +1,4 @@
-import 'package:json_god/json_god.dart';
+import 'package:json_conv/json_conv.dart';
 
 class SampleNestedClass {
   String bar;
