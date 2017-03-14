@@ -11,6 +11,7 @@ const _colon = 58;
 const _boolTrue = 116;
 const _boolFalse = 102;
 const _newLine = 10;
+const _dot = 46;
 var _mirList = reflectType(List);
 var _mirMap = reflectType(Map);
 
@@ -60,7 +61,12 @@ class TypeInfo {
   }
 }
 
+final _cache = <Type, TypeInfo>{};
+
 TypeInfo generateElements(Type type) {
+  if (_cache.containsKey(type)) {
+    return _cache[type];
+  }
   ClassMirror classMirror = reflectClass(type);
   TypeMirror typeMirror = reflectType(type);
   List<Element> elements = new List<Element>();
@@ -121,7 +127,9 @@ TypeInfo generateElements(Type type) {
       }
     }
   });
-  return new TypeInfo(type, elements, isMap, isList);
+  var tp = new TypeInfo(type, elements, isMap, isList);
+  _cache[type] = tp;
+  return tp;
 }
 
 Uint8List stringToByteArray(String json) {
@@ -182,7 +190,8 @@ int _seekList(List<int> l, int start, {bool end: false}) {
       count--;
     }
   }
-  return l.length;
+  throw new StateError(
+      "could not find start or end of list from position $start, end: $end");
 }
 
 int _seekString(List<int> l, int start, {bool end: false}) {
@@ -192,7 +201,8 @@ int _seekString(List<int> l, int start, {bool end: false}) {
       return c;
     }
   }
-  return l.length;
+  throw new StateError(
+      "could not find start or end of string from position $start, end: $end");
 }
 
 int _seekClass(List<int> l, int start, {bool end: false}) {
@@ -225,7 +235,8 @@ int _seekClass(List<int> l, int start, {bool end: false}) {
       }
     }
   }
-  return l.length;
+  throw new StateError(
+      "could not find start or end of class from position $start, end: $end");
 }
 
 int _seekNumberOrBool(List<int> l, int start, {bool end: false}) {
@@ -258,6 +269,48 @@ int _seekNumberOrBool(List<int> l, int start, {bool end: false}) {
   return l.length;
 }
 
+class TypeWrap {
+  final Type type;
+  final int end;
+
+  TypeWrap(this.type, this.end);
+}
+
+TypeWrap _seekType(List<int> l, int start) {
+  Type type;
+  int end = -1;
+  int sstart = -1;
+  _seekMap.forEach((t, f) {
+    try {
+      int starttmp = 0;
+      int endtmp = 0;
+      starttmp = f(l, start);
+      if (sstart == -1) {
+        sstart = starttmp;
+      }
+      endtmp = f(l, starttmp + 1, end: true);
+      if (endtmp - starttmp > end && starttmp <= sstart) {
+        end = endtmp - starttmp;
+        sstart = starttmp;
+        type = t;
+      }
+    } catch (_) {}
+  });
+  if (type == Element) {
+    return new TypeWrap(Map, end);
+  }
+  if (type == num || type == bool || type == int) {
+    if (l.contains(_boolTrue)) {
+      return new TypeWrap(bool, end);
+    }
+    if (l.contains(_boolFalse)) {
+      return new TypeWrap(bool, end);
+    }
+    return new TypeWrap(num, end);
+  }
+  return new TypeWrap(type ?? dynamic, end);
+}
+
 bool _isPrimitive(Type value) {
   return value == num ||
       value == bool ||
@@ -268,46 +321,79 @@ bool _isPrimitive(Type value) {
 }
 
 // add to test file lol
-class TestWrap {
+class TestWrapSeek {
   final String json;
   final String result;
   final int start;
   final Function f;
 
-  TestWrap(this.json, this.result, this.start, this.f);
+  TestWrapSeek(this.json, this.result, this.start, this.f);
 }
 
 void test12() {
-  var list = <TestWrap>[
-    new TestWrap(' {  } ', '{  }', 0, _seekClass),
-    new TestWrap(' { { {}}  } ', '{ { {}}  }', 0, _seekClass),
-    new TestWrap(' { { {}}  } ', '{ {}}', 2, _seekClass),
-    new TestWrap('{  [] }', '{  [] }', 0, _seekClass),
-    new TestWrap(' {  } ', '{  }', 0, _seekClass),
-    new TestWrap(' {"key": "value{}" } ', '{"key": "value{}" }', 0, _seekClass),
-    new TestWrap(' {"key": "{" } ', '{"key": "{" }', 0, _seekClass),
-    new TestWrap('""', '""', 0, _seekString),
-    new TestWrap('"test  \n"', '"test  \n"', 0, _seekString),
-    new TestWrap('"test \t"', '"test \t"', 0, _seekString),
-    new TestWrap('"  ""', '""', 2, _seekString),
-    new TestWrap('[]', '[]', 0, _seekList),
-    new TestWrap('[ [ ] [ ] []]', '[ [ ] [ ] []]', 0, _seekList),
-    new TestWrap(' [  ] ', '[  ]', 0, _seekList),
-    new TestWrap(' ["[", "" ] ', '["[", "" ]', 0, _seekList),
-    new TestWrap('{"test": 0.1} ', '0.1', 0, _seekNumberOrBool),
-    new TestWrap('{"test": true} ', 'true', 0, _seekNumberOrBool),
-    new TestWrap('{"test": false} ', 'false', 0, _seekNumberOrBool),
-    new TestWrap(' 0.1', '0.1', 0, _seekNumberOrBool),
-    new TestWrap('0.1  ', '0.1', 0, _seekNumberOrBool),
+  var list = <TestWrapSeek>[
+    new TestWrapSeek(' {  } ', '{  }', 0, _seekClass),
+    new TestWrapSeek(' { { {}}  } ', '{ { {}}  }', 0, _seekClass),
+    new TestWrapSeek(' { { {}}  } ', '{ {}}', 2, _seekClass),
+    new TestWrapSeek('{  [] }', '{  [] }', 0, _seekClass),
+    new TestWrapSeek(' {  } ', '{  }', 0, _seekClass),
+    new TestWrapSeek(
+        ' {"key": "value{}" } ', '{"key": "value{}" }', 0, _seekClass),
+    new TestWrapSeek(' {"key": "{" } ', '{"key": "{" }', 0, _seekClass),
+    new TestWrapSeek('""', '""', 0, _seekString),
+    new TestWrapSeek('"test  \n"', '"test  \n"', 0, _seekString),
+    new TestWrapSeek('"test \t"', '"test \t"', 0, _seekString),
+    new TestWrapSeek('"  ""', '""', 2, _seekString),
+    new TestWrapSeek('[]', '[]', 0, _seekList),
+    new TestWrapSeek('[ [ ] [ ] []]', '[ [ ] [ ] []]', 0, _seekList),
+    new TestWrapSeek(' [  ] ', '[  ]', 0, _seekList),
+    new TestWrapSeek(' ["[", "" ] ', '["[", "" ]', 0, _seekList),
+    new TestWrapSeek('{"test": 0.1} ', '0.1', 0, _seekNumberOrBool),
+    new TestWrapSeek('{"test": true} ', 'true', 0, _seekNumberOrBool),
+    new TestWrapSeek('{"test": false} ', 'false', 0, _seekNumberOrBool),
+    new TestWrapSeek(' 0.1', '0.1', 0, _seekNumberOrBool),
+    new TestWrapSeek('0.1  ', '0.1', 0, _seekNumberOrBool),
   ];
 
   list.forEach((w) {
-    var start = w.f(UTF8.encode(w.json), w.start);
-    var end = w.f(UTF8.encode(w.json), start + 1, end: true);
-    if (w.result !=
-        UTF8.decode(UTF8.encode(w.json).getRange(start, end).toList())) {
+    try {
+      var start = w.f(UTF8.encode(w.json), w.start);
+      var end = w.f(UTF8.encode(w.json), start + 1, end: true);
+      if (w.result !=
+          UTF8.decode(UTF8.encode(w.json).getRange(start, end).toList())) {
+        print(
+            "test failed\n json should be ${w.result} but is ${UTF8.decode(UTF8.encode(w.json).getRange(start, end).toList())}");
+      }
+    } catch (e) {
       print(
-          "test failed\n json should be ${w.result} but is ${UTF8.decode(UTF8.encode(w.json).getRange(start, end).toList())}");
+          "crashed test\n json: ${w.json}\n result: ${w.result}\n pos: ${w.start}");
+      print(e);
+    }
+  });
+}
+
+class TestWrapType {
+  final String json;
+  final Type type;
+  final int start;
+  TestWrapType(this.json, this.start, this.type);
+}
+
+void test13() {
+  var list = <TestWrapType>[
+    new TestWrapType(' {  } ', 0, Map),
+    new TestWrapType(' [] ', 0, List),
+    new TestWrapType(' "" ', 0, String),
+    new TestWrapType(' 0.12 ', 0, num),
+    new TestWrapType(' true ', 0, bool),
+    new TestWrapType(' 1 ', 0, num),
+  ];
+
+  list.forEach((w) {
+    TypeWrap t = _seekType(UTF8.encode(w.json), w.start);
+    if (t.type != w.type) {
+      print(
+          "test failed\n type for ${w.json} should be ${w.type} but is ${t.type}");
     }
   });
 }
@@ -316,13 +402,19 @@ void test12() {
 String debugJson;
 T decode<T>(String json, Type type) {
   debugJson = json;
-  return _consumeList<T>(UTF8.encode(json), type);
+  var res = _consumeList<T>(UTF8.encode(json), type);
+  return res.data;
 }
 
-T _consumeList<T>(List<int> list, Type type,
-    {int position: 0, bool onlyOne: false}) {
-  print("consumeList<$type>");
+class _Result<T> {
+  T data;
+  int end;
 
+  _Result(this.data, this.end);
+}
+
+_Result<T> _consumeList<T>(List<int> list, Type type,
+    {int position: 0, bool onlyOne: false}) {
   final info = generateElements(type);
   ClassMirror classMirror = reflectType(type);
   InstanceMirror instance;
@@ -330,14 +422,15 @@ T _consumeList<T>(List<int> list, Type type,
     instance = classMirror.newInstance(new Symbol(""), []);
   } catch (_) {}
 
-  T ret;
-  Type arrayType;
-
+  Map<String, dynamic> m;
+  if (info.isMap) {
+    m = new Map<String, dynamic>();
+  }
   //flag if we read the starting class opening or not
   bool afterKey = false;
   String key;
 
-  int idx = 0;
+  int idx = position;
   while (idx < list.length) {
     int char = list[idx];
     switch (char) {
@@ -346,12 +439,12 @@ T _consumeList<T>(List<int> list, Type type,
 
       case _closeClass:
         if (onlyOne) {
-          return instance.reflectee;
+          return new _Result<T>(instance.reflectee, idx);
         }
         break;
 
       case _openArray:
-        var endArray = _seekMap[List](list, idx + 1, end: true);
+        var endArray = _seekMap[List](list, idx + 1, end: true) - 1;
         int length = endArray - idx;
         Type arrayType;
 
@@ -374,35 +467,27 @@ T _consumeList<T>(List<int> list, Type type,
         if (_isPrimitive(arrayType)) {
           while (idx < endArray) {
             int start = _seekMap[arrayType](list, idx);
-            end = _seekMap[arrayType](list, idx + 1, end: true);
-            if (end >= endArray) {
-              print("end of array primitive");
-              break;
-            }
+            end = _seekMap[arrayType](list, start + 1, end: true);
             valueList
                 .add(_convMap[arrayType](list.getRange(start, end).toList()));
-            idx = end;
+            idx = end + 1;
           }
         } else {
-          while (idx + length < endArray) {
-            int end = _seekMap[Element](list, idx + 1, end: true);
-            if (end >= endArray) {
-              print("end of array non primitive");
-              break;
-            }
+          //array of arrays???
+          while (idx < endArray) {
             var wat = _consumeList<arrayType>(list, arrayType,
-                position: idx, onlyOne: true);
-            valueList.add(wat);
-            idx = end;
+                position: idx + 1, onlyOne: true);
+            valueList.add(wat.data);
+            idx = wat.end + 1;
           }
         }
 
         if (info.isList) {
-          return valueList;
+          return new _Result<List<arrayType>>(valueList, idx);
         } else if (ele != null && instance != null) {
           instance.setField(ele.symbol, valueList);
         } else {
-          throw new StateError("element null and not primitive cant be");
+          throw new StateError("element null and not a list? invalid json");
         }
 
         break;
@@ -412,45 +497,42 @@ T _consumeList<T>(List<int> list, Type type,
         int start = idx;
         int end = _seekMap[String](list, start + 1, end: true);
         key = _convMap[String](list.getRange(start, end).toList());
-        print("key: $key");
-
         idx = end;
+
+        Type valueType;
 
         var ele =
             info.elements.firstWhere((e) => e.key == key, orElse: () => null);
         if (ele != null) {
-          print("${ele.type}: _isPrimitive = ${_isPrimitive(ele.type)}");
-          if (!_isPrimitive(ele.type)) {
-            if (ele.type == new List<Object>().runtimeType) {
-              print("ele type is list");
-            } else {
-              var wat = _consumeList<ele.type>(list, ele.type,
-                  position: idx, onlyOne: true);
-              instance.setField(ele.symbol, wat);
-            }
-          } else {
-            int start = _seekMap[ele.type](list, idx);
-            int end = _seekMap[ele.type](list, start + 1, end: true);
-            print("start: $start, end: $end");
-            print("string: ...${debugJson.substring(start, end)}///");
-            if (start == end) {
-              instance.setField(ele.symbol, _convMap[ele.type]([list[start]]));
-              idx = end + 1;
-              print(list[start]);
-              print(_convMap[ele.type](list[start]));
-            } else {
-              instance.setField(ele.symbol,
-                  _convMap[ele.type](list.getRange(start, end).toList()));
-              idx = end + 1;
-              print(list.getRange(start, end));
-              print(_convMap[ele.type](list.getRange(start, end).toList()));
-            }
-          }
+          valueType = ele.type;
+        } else if (info.isMap) {
+          TypeWrap tw = _seekType(list, idx);
+          valueType = tw.type;
         } else {
-          //ignore seek to end of $type built peekType?
-          // key = "";
+          TypeWrap tw = _seekType(list, idx);
+          idx = tw.end + 1;
+          continue;
         }
-
+        if (_isPrimitive(valueType)) {
+          int start = _seekMap[valueType](list, idx);
+          int end = _seekMap[valueType](list, start + 1, end: true);
+          if (info.isMap) {
+            m[key] = _convMap[valueType](list.getRange(start, end).toList());
+          } else {
+            instance.setField(ele.symbol,
+                _convMap[valueType](list.getRange(start, end).toList()));
+          }
+          idx = end;
+        } else {
+          var wat = _consumeList<valueType>(list, valueType,
+              position: idx, onlyOne: true);
+          if (info.isMap) {
+            m[key] = wat.data;
+          } else {
+            instance.setField(ele.symbol, wat.data);
+          }
+          idx = wat.end;
+        }
         break;
       case _colon: //ignore :
       case _white: //ignore whtiespace
@@ -462,5 +544,6 @@ T _consumeList<T>(List<int> list, Type type,
     idx++;
   }
 
-  return instance.reflectee;
+  if (info.isMap) return new _Result<Map<String, dynamic>>(m, idx);
+  return new _Result<T>(instance.reflectee, idx);
 }

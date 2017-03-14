@@ -1,5 +1,7 @@
 import 'package:json_conv/json_conv.dart';
 import 'package:logging/logging.dart';
+import 'dart:convert';
+import 'package:json_god/json_god.dart' as god;
 
 class Simple {
   int id;
@@ -103,6 +105,9 @@ void printChars() {
   l.forEach((str) => print("$str: ${str.codeUnits}"));
 }
 
+var list =
+    '{"simple": [{ "id": 23, "text": "test text" }, { "id": 25, "text": "test text" }, { "id": 26, "text": "test text" }]}';
+
 void main() {
   hierarchicalLoggingEnabled = true;
   Logger.root.level = Level.ALL;
@@ -112,7 +117,33 @@ void main() {
   //test<Test>(new Test(), Test);
   //printChars();
 
-  test12();
+  // test12();
+  // test13();
+
+  // Stopwatch w = new Stopwatch();
+  // w.start();
+  // var b = JSON.decode(list);
+  // print(b.length);
+  // w.stop();
+  // print(w.elapsedMilliseconds);
+
+  Stopwatch w = new Stopwatch();
+  w.start();
+  for (int i = 0; i < 5000; i++) {
+    var b = decode<Test6>(list, Test6);
+  }
+  w.stop();
+  print("decode took: ${w.elapsedMilliseconds}");
+
+  w.reset();
+  w.start();
+  for (int i = 0; i < 5000; i++) {
+    var b = god.deseriaizeJson(list, outputType: Test6);
+  }
+  w.stop();
+  print("json god took: ${w.elapsedMilliseconds}");
+
+  // w.reset();
 
   // String json = '{"id": 2, "text":"lol"}';
   // print(json);
@@ -127,14 +158,14 @@ void main() {
   // print("");
 
   // print('{"_id":1000, "_lol??": "wat", "real": true, "tellme": 2.20}');
-  // var b = decode(
+  // b = decode(
   //     '{"_id":1000, "_lol??": "wat", "real": true, "tellme": 2.20}', Test);
   // print(b);
   // print("");
 
   // print(
   //     '{"_id":0, "_lol??": "wat", "real": true, "tellme": 0.1001, "text2": "lol", "test3":"lol2"}');
-  // var b = decode(
+  // b = decode(
   //     '{"_id":0, "_lol??": "wat", "real": true, "tellme": 0.1001, "text2": "lol", "test3":"lol2"}',
   //     Test4);
   // print(b);
@@ -158,10 +189,8 @@ void main() {
   // print(b);
   // print("");
 
-  // json = '{"test": 2, "lol": "lol"}';
+  // var json = '{"test": 2, "lol": "lol"}';
   // print(json);
-  // b = decode(json, Map);
+  // var b = decode(json, Map);
   // print(b);
-
-  //print(deseriaize<Test>('{"_id":0, "text":"hallo", "_lol??": "wat"}'));
 }
