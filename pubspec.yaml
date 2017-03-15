@@ -5,12 +5,13 @@ authors:
 description: Easy JSON serialization and deserialization in Dart.
 homepage: https://github.com/Kemonozume/json_god
 environment:
-  sdk: ">=1.22.0"
+  sdk: ">=1.22.1"
   
 dependencies:
   logging: any 
   json_god: ^2.0.0-beta
-  
+  dartson: 0.2.6
+
 dev_dependencies:
   browser: "0.10.0+2"
   test: ^0.12.13+5

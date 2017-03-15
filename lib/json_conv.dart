@@ -7,10 +7,6 @@ import 'dart:typed_data';
 import 'dart:math';
 import 'package:logging/logging.dart';
 
-part 'src/serialize.dart';
-part 'src/deserialize.dart';
-part 'src/validation.dart';
-part 'src/util.dart';
 part 'src/annotations.dart';
 part 'src/reflection.dart';
 
