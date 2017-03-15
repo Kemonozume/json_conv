@@ -43,21 +43,19 @@ bool _isPrimitive(Type value) {
 
 class Element {
   final Type type;
-
   final Symbol symbol;
-  final String key;
   bool isMap;
   bool isList;
   bool isPrimList;
   bool isPrimMap;
   Type listType;
 
-  Element(this.key, this.symbol, this.type);
+  Element(this.symbol, this.type);
 
   bool get isComplex => !isPrimList && !isList && !isMap && !isPrimMap;
   @override
   String toString() {
-    return "Element<$type> key: $key, symbol: $symbol, isMap: $isMap, isList: $isList";
+    return "Element<type> symbol: $symbol, isMap: $isMap, isList: $isList";
   }
 }
 
@@ -65,7 +63,7 @@ class TypeInfo {
   final Type type;
   final ClassMirror mir;
   String typeStr;
-  final List<Element> elements;
+  final Map<String, Element> elements;
   bool isMap;
   bool isList;
   Type listType;
@@ -81,7 +79,7 @@ class TypeInfo {
 
   String toString() {
     return "class $type:\n" +
-        elements.fold("", (a, b) => a + b.toString() + "\n");
+        elements.values.fold("", (a, b) => a + b.toString() + "\n");
   }
 }
 
@@ -93,7 +91,7 @@ TypeInfo generateElements(Type type) {
   }
   ClassMirror classMirror = reflectClass(type);
   TypeMirror typeMirror = reflectType(type);
-  List<Element> elements = new List<Element>();
+  Map<String, Element> elements = new Map<String, Element>();
   bool isMap = false;
   bool isPrimMap = false;
   bool isList = false;
@@ -149,7 +147,7 @@ TypeInfo generateElements(Type type) {
       }
       if (dm.type.hasReflectedType) {
         Type t = dm.type.reflectedType;
-        final element = new Element(key, symbol, t);
+        final element = new Element(symbol, t);
         if (dm.type.isAssignableTo(_mirMap)) {
           element.isMap = true;
         } else {
@@ -171,7 +169,7 @@ TypeInfo generateElements(Type type) {
           element.isList = false;
           element.isPrimList = false;
         }
-        elements.add(element);
+        elements[key] = element;
       }
     }
   });
@@ -235,7 +233,7 @@ class ComplexSetter<T> implements ISetter<T> {
   void add(dynamic key, dynamic val) {
     var ele;
     try {
-      ele = info.elements.firstWhere((e) => e.key == key, orElse: () => null);
+      ele = info.elements[key];
       if (ele != null) {
         instance.setField(ele.symbol, val);
       }
@@ -288,8 +286,7 @@ class BaseSetter<T> {
       }
     } else if (info.isComplex) {
       int idx = pos - 1;
-      final ele = info.elements
-          .firstWhere((e) => e.key == keys[idx], orElse: () => null);
+      final ele = info.elements[keys[idx]];
       if (ele == null) {
         pos = pos - length;
       } else {
