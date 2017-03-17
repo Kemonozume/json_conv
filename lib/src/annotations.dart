@@ -11,5 +11,5 @@ class Property {
         this.name = name;
 
   bool get ignore => _ignore == null ? false : _ignore;
-  String toString() => "DartsonProperty: Name: ${name} , Ignore: ${ignore}";
+  bool get hasName => (name == null) ? false : (name.isEmpty) ? false : true;
 }

@@ -1,43 +1,36 @@
 import 'package:json_conv/json_conv.dart';
 
-class SampleNestedClass {
-  String bar;
-
-  SampleNestedClass([String this.bar]);
+class ExtendeeClass {
+  int id;
+  String text;
 }
 
-class SampleClass {
-  String hello;
-  List<SampleNestedClass> nested = [];
-
-  SampleClass([String this.hello]);
+class ExtenderClass extends ExtendeeClass {
+  bool isValid;
 }
 
-@WithSchemaUrl(
-    "http://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/babelrc.json")
-class BabelRc {
-  List<String> presets;
-  List<String> plugins;
-
-  BabelRc(
-      {List<String> this.presets: const [],
-      List<String> this.plugins: const []});
+class ListSimple {
+  List<String> list;
 }
 
-@WithSchema(const {
-  r"$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Validated Sample Class",
-  "description": "Sample schema for validation via JSON God",
-  "type": "object",
-  "hello": const {"description": "A friendly greeting.", "type": "string"},
-  "nested": const {
-    "description": "A list of NestedSampleClass items within this instance.",
-    "type": "array",
-    "items": const {
-      "type": "object",
-      "bar": const {"description": "Filler text", "type": "string"}
-    }
-  },
-  "required": const ["hello", "nested"]
-})
-class ValidatedSampleClass {}
+class ListComplex {
+  List<ExtendeeClass> list;
+}
+
+class MapComplex {
+  Map<String, Person> persons;
+}
+
+class MapSimple {
+  Map<String, String> persons;
+}
+
+class Person {
+  String name;
+}
+
+class Male {
+  Person person;
+  String test;
+}
+
