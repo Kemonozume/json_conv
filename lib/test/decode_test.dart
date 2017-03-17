@@ -81,7 +81,7 @@ void main() {
 
   test('mapComplexDecoding', () {
     final json =
-        '{"person1": {"name": "name"},"person2": {"name": "name2"},"person3": {"name": "name3"}}';
+        '{"persons": {"person1": {"name": "name"},"person2": {"name": "name2"},"person3": {"name": "name3"}}}';
     final sample = conv.decodeTest<MapComplex>(json, MapComplex);
 
     expect(sample, isNotNull);
@@ -90,5 +90,45 @@ void main() {
     expect(sample.persons["person1"].name, equals("name"));
     expect(sample.persons["person2"].name, equals("name2"));
     expect(sample.persons["person3"].name, equals("name3"));
+  });
+
+  test('mapComplexDecoding2', () {
+    final json =
+        '{"person1": {"name": "name"},"person2": {"name": "name2"},"person3": {"name": "name3"}}';
+    final sample = conv.decodeTest<Map<String, Person>>(
+        json, new Map<String, Person>().runtimeType);
+
+    expect(sample, isNotNull);
+    expect(sample, isNotNull);
+    expect(sample.length, equals(3));
+    expect(sample["person1"].name, equals("name"));
+    expect(sample["person2"].name, equals("name2"));
+    expect(sample["person3"].name, equals("name3"));
+  });
+
+  test('mapSimpleDecoding', () {
+    final json =
+        '{"persons": {"person1": "name","person2":"name2","person3": "name3"}}';
+    final sample = conv.decodeTest<MapSimple>(json, MapSimple);
+
+    expect(sample, isNotNull);
+    expect(sample.persons, isNotNull);
+    expect(sample.persons.length, equals(3));
+    expect(sample.persons["person1"], equals("name"));
+    expect(sample.persons["person2"], equals("name2"));
+    expect(sample.persons["person3"], equals("name3"));
+  });
+
+  test('mapSimpleDecoding2', () {
+    final json = '{"person1": "name","person2":"name2","person3": "name3"}';
+    final sample = conv.decodeTest<Map<String, String>>(
+        json, new Map<String, String>().runtimeType);
+
+    expect(sample, isNotNull);
+    expect(sample, isNotNull);
+    expect(sample.length, equals(3));
+    expect(sample["person1"], equals("name"));
+    expect(sample["person2"], equals("name2"));
+    expect(sample["person3"], equals("name3"));
   });
 }

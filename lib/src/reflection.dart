@@ -28,15 +28,14 @@ class Element {
   final Type type;
   final Symbol symbol;
   bool isMap;
+  Type mapType;
   bool isList;
-  bool isPrimList;
-  bool isPrimMap;
-  bool ignore;
   Type listType;
+  bool ignore;
 
   Element(this.symbol, this.type);
 
-  bool get isComplex => !isPrimList && !isList && !isMap && !isPrimMap;
+  bool get isComplex => !isList && !isMap;
   @override
   String toString() {
     return "Element<type> symbol: $symbol, isMap: $isMap, isList: $isList";
@@ -49,17 +48,16 @@ class TypeInfo {
   String typeStr;
   final Map<String, Element> elements;
   bool isMap;
+  Type mapType;
   bool isList;
   Type listType;
-  bool isPrimList;
-  bool isPrimMap;
 
-  TypeInfo(this.type, this.elements, this.isMap, this.isList, this.isPrimMap,
-      this.isPrimList, this.listType, this.mir) {
+  TypeInfo(this.type, this.elements, this.isMap, this.mapType, this.isList,
+      this.listType, this.mir) {
     typeStr = "$type";
   }
 
-  bool get isComplex => !isPrimList && !isList && !isMap && !isPrimMap;
+  bool get isComplex => !isList && !isMap;
 
   String toString() {
     return "class $type:\n" +
@@ -77,13 +75,17 @@ TypeInfo generateElements(Type type) {
   final typeMirror = reflectType(type);
   final elements = new Map<String, Element>();
   bool isMap = false;
-  bool isPrimMap = false;
   bool isList = false;
-  bool isPrimList = false;
 
+  Type mapType;
   Type listType;
   if (typeMirror.isAssignableTo(_mirMap)) {
     isMap = true;
+    final List<TypeMirror> typeArguments = typeMirror.typeArguments;
+    if (typeArguments.length > 1) {
+      if (typeArguments[1].hasReflectedType)
+        mapType = typeArguments[1].reflectedType;
+    }
   }
 
   if (typeMirror.isAssignableTo(_mirList)) {
@@ -91,9 +93,6 @@ TypeInfo generateElements(Type type) {
     final List<TypeMirror> typeArguments = typeMirror.typeArguments;
     if (typeArguments.length > 0) {
       if (typeArguments[0].hasReflectedType) {
-        if (_isPrimitive(typeArguments[0].reflectedType)) {
-          isPrimList = true;
-        }
         listType = typeArguments[0].reflectedType;
       }
     }
@@ -136,31 +135,30 @@ TypeInfo generateElements(Type type) {
         element.ignore = ignore;
         if (dm.type.isAssignableTo(_mirMap)) {
           element.isMap = true;
+          final List<TypeMirror> typeArguments = dm.type.typeArguments;
+          if (typeArguments.length > 1) {
+            if (typeArguments[1].hasReflectedType)
+              element.listType = typeArguments[1].reflectedType;
+          }
         } else {
           element.isMap = false;
-          element.isPrimList = false;
         }
         if (dm.type.isAssignableTo(_mirList)) {
           element.isList = true;
           final List<TypeMirror> typeArguments = typeMirror.typeArguments;
           if (typeArguments.length > 0) {
-            if (typeArguments[0].hasReflectedType) {
-              if (_isPrimitive(typeArguments[0].reflectedType)) {
-                isPrimList = true;
-              }
+            if (typeArguments[0].hasReflectedType)
               element.listType = typeArguments[0].reflectedType;
-            }
           }
         } else {
           element.isList = false;
-          element.isPrimList = false;
         }
         elements[key] = element;
       }
     }
   });
-  final tp = new TypeInfo(type, elements, isMap, isList, isPrimMap, isPrimList,
-      listType, classMirror);
+  final tp = new TypeInfo(
+      type, elements, isMap, mapType, isList, listType, classMirror);
   _cache[type] = tp;
   return tp;
 }
@@ -255,31 +253,29 @@ class BaseSetter<T> {
       setter = new MapSetter();
     }
 
-    if (info.isList) {
-      if (_isPrimitive(info.listType)) {
-        for (int i = 0; i < length; i++) {
-          pos--;
-          setter.add(i, vals[pos]);
-        }
-      } else {
-        for (int i = 0; i < length; i++) {
-          pos--;
-          setter.add(i, _decodeObj<info.listType>(info.listType));
-        }
+    final length = vals[pos].length;
+
+    for (int i = 0; i < length; i++) {
+      pos--;
+      Type type;
+      dynamic key = keys[pos];
+      if (info.isList) {
+        type = info.listType;
+        key = i;
       }
-    } else if (info.isComplex) {
-      for (int i = 0; i < length; i++) {
-        pos--;
+      if (info.isComplex) {
         final ele = info.elements[keys[pos]];
         if (ele == null || ele.ignore) {
-          pos--;
+          continue;
         } else {
-          if (_isPrimitive(ele.type)) {
-            setter.add(keys[pos], vals[pos]);
-          } else {
-            setter.add(keys[pos], _decodeObj<ele.type>(ele.type));
-          }
+          type = ele.type;
         }
+      }
+      if (info.isMap) type = info.mapType;
+      if (_isPrimitive(type)) {
+        setter.add(key, vals[pos]);
+      } else {
+        setter.add(key, _decodeObj<type>(type));
       }
     }
 

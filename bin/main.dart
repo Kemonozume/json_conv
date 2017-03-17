@@ -354,10 +354,10 @@ void main() {
   });
 
   final json =
-      '{"person1": {"name": "name"},"person2": {"name": "name2"},"person3": {"name": "name3"}}';
+      '{"persons": {"person1": {"name": "name"},"person2": {"name": "name2"},"person3": {"name": "name3"}}}';
   final sample = decodeTest<MapComplex>(json, MapComplex);
+  print(sample.persons);
 
-  //print(decodeTest<List<Test6>>(list, new List<Test6>().runtimeType));
   // int its = 2000;
   // Stopwatch w = new Stopwatch();
   // w.start();

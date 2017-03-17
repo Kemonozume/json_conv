@@ -1,5 +1,3 @@
-import 'package:json_conv/json_conv.dart';
-
 class ExtendeeClass {
   int id;
   String text;
@@ -33,4 +31,3 @@ class Male {
   Person person;
   String test;
 }
-
