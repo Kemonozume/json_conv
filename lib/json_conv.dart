@@ -6,7 +6,8 @@ import 'dart:mirrors';
 import 'package:logging/logging.dart';
 
 part 'src/annotations.dart';
-part 'src/reflection.dart';
+part 'src/decoding.dart';
+part 'src/typeinfo.dart';
 
 /// set logging level
 Level level = Level.ALL;

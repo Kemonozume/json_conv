@@ -57,16 +57,13 @@ class Male {
   String test;
 }
 
-// void test<T>(Test t, Type i) {
-//   final Type d = T;
-//   print(d);
-//   print("${d == i}");
-//   if (t.runtimeType == d) {
-//     print("is ${t.runtimeType}");
-//   } else {
-//     print("is not ${t.runtimeType}");
-//   }
-// }
+void test<T>(Type i) {
+  final Type d = T;
+  print(d);
+  print(T);
+  print(i);
+  print("${d == i}");
+}
 
 // {: [123]
 // }: [125]
@@ -352,6 +349,9 @@ void main() {
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
+
+  test<Test6>(Simple);
+  return;
 
   // final json =
   //     '{"persons": {"person1": {"name": "name"},"person2": {"name": "name2"},"person3": {"name": "name3"}}}';
