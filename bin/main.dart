@@ -353,54 +353,45 @@ void main() {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
   });
 
-  final json =
-      '{"persons": {"person1": {"name": "name"},"person2": {"name": "name2"},"person3": {"name": "name3"}}}';
-  final sample = decodeTest<MapComplex>(json, MapComplex);
-  print(sample.persons);
+  // final json =
+  //     '{"persons": {"person1": {"name": "name"},"person2": {"name": "name2"},"person3": {"name": "name3"}}}';
+  // final sample = decodeTest<MapComplex>(json, MapComplex);
+  // print(sample.persons);
 
-  // int its = 2000;
-  // Stopwatch w = new Stopwatch();
-  // w.start();
-  // for (int i = 0; i < its; i++) {
-  //   var b = JSON.decode(list);
-  // }
-  // w.stop();
-  // print("JSON.decode took: ${w.elapsedMilliseconds}");
+  int its = 2000;
+  Stopwatch w = new Stopwatch();
+  w.start();
+  for (int i = 0; i < its; i++) {
+    var b = JSON.decode(list);
+  }
+  w.stop();
+  print("JSON.decode took: ${w.elapsedMilliseconds}");
 
-  // w.reset();
-  // w.start();
-  // for (int i = 0; i < its; i++) {
-  //   var b = decodeTest<List<Test6>>(list, new List<Test6>().runtimeType);
-  //   //print(b.length);
-  // }
-  // w.stop();
-  // print("decode 3rd version took: ${w.elapsedMilliseconds}");
+  w.reset();
+  w.start();
+  for (int i = 0; i < its; i++) {
+    var b = decode<List<Test6>>(list, new List<Test6>().runtimeType);
+    //print(b.length);
+  }
+  w.stop();
+  print("decode 3rd version took: ${w.elapsedMilliseconds}");
 
-  // w.reset();
-  // w.start();
-  // for (int i = 0; i < its; i++) {
-  //   var b = decode<List<Test6>>(list, new List<Test6>().runtimeType);
-  //   //print(b.length);
-  // }
-  // w.stop();
-  // print("decode 1st version took: ${w.elapsedMilliseconds}");
+  w.reset();
+  w.start();
+  for (int i = 0; i < its; i++) {
+    var b = god.deseriaizeJson(list, outputType: new List<Test6>().runtimeType);
+    //print(b.length);
+  }
+  w.stop();
+  print("json god took: ${w.elapsedMilliseconds}");
 
-  // w.reset();
-  // w.start();
-  // for (int i = 0; i < its; i++) {
-  //   var b = god.deseriaizeJson(list, outputType: new List<Test6>().runtimeType);
-  //   //print(b.length);
-  // }
-  // w.stop();
-  // print("json god took: ${w.elapsedMilliseconds}");
-
-  // w.reset();
-  // w.start();
-  // var dson = new d.Dartson.JSON();
-  // for (int i = 0; i < its; i++) {
-  //   var b = dson.decode(list, new Test6(), true);
-  //   //print(b.length);
-  // }
-  // w.stop();
-  // print("dartson took: ${w.elapsedMilliseconds}");
+  w.reset();
+  w.start();
+  var dson = new d.Dartson.JSON();
+  for (int i = 0; i < its; i++) {
+    var b = dson.decode(list, new Test6(), true);
+    //print(b.length);
+  }
+  w.stop();
+  print("dartson took: ${w.elapsedMilliseconds}");
 }

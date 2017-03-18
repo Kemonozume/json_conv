@@ -5,7 +5,7 @@ void main() {
   test('validAnnotation', () {
     final orig = new AnnotationSample.withValues(1, "test text");
     final json = '{"id":1, "test":"test text"}';
-    final sample = conv.decodeTest<AnnotationSample>(json, AnnotationSample);
+    final sample = conv.decode<AnnotationSample>(json, AnnotationSample);
 
     expect(sample, new isInstanceOf<AnnotationSample>());
     expect(sample, equals(orig));
@@ -13,7 +13,7 @@ void main() {
 
   test('wrongNamedAnnotation', () {
     final json = '{"id":1, "test":"test text"}';
-    final sample = conv.decodeTest<AnnotationSample2>(json, AnnotationSample2);
+    final sample = conv.decode<AnnotationSample2>(json, AnnotationSample2);
 
     expect(sample, isNotNull);
     expect(sample, new isInstanceOf<AnnotationSample2>());
@@ -23,7 +23,7 @@ void main() {
 
   test('ignoreAnnotation', () {
     final json = '{"id":1, "text":"test text"}';
-    final sample = conv.decodeTest<AnnotationSample3>(json, AnnotationSample3);
+    final sample = conv.decode<AnnotationSample3>(json, AnnotationSample3);
     expect(sample, isNotNull);
     expect(sample, new isInstanceOf<AnnotationSample3>());
     expect(sample.id, equals(1));
@@ -32,7 +32,7 @@ void main() {
 
   test('ignoreAnnotation2', () {
     final json = '{"id":1, "text":"test text"}';
-    final sample = conv.decodeTest<AnnotationSample4>(json, AnnotationSample4);
+    final sample = conv.decode<AnnotationSample4>(json, AnnotationSample4);
     expect(sample, isNotNull);
     expect(sample, new isInstanceOf<AnnotationSample4>());
     expect(sample.id, equals(1));

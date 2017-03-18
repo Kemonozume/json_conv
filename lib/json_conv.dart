@@ -3,8 +3,6 @@ library json_conv;
 
 import 'dart:convert';
 import 'dart:mirrors';
-import 'dart:typed_data';
-import 'dart:math';
 import 'package:logging/logging.dart';
 
 part 'src/annotations.dart';
