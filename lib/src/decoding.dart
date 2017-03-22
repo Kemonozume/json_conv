@@ -1,5 +1,11 @@
 part of json_conv;
 
+Map<Type, Function> convMap = <Type, Function>{
+  DateTime: (value) {
+    return DateTime.parse(value);
+  }
+};
+
 abstract class _ISetter<T> {
   void add(dynamic key, dynamic value);
   T obj();
@@ -118,7 +124,9 @@ class BaseSetter<T> {
         }
       }
       if (info.isMap) type = info.mapType;
-      if (info.isPrimitive) {
+      if (convMap.containsKey(type)) {
+        setter.add(key, convMap[type](vals[pos]));
+      } else if (info.isPrimitive) {
         setter.add(key, vals[pos]);
       } else {
         setter.add(key, _decodeObj(type));
