@@ -1,77 +1,35 @@
-# JSON God v2
+# json_conv
 
-![version 2.0.0-beta](https://img.shields.io/badge/version-2.0.0--beta-blue.svg)
+json_conv started as a fork of [json_god](https://github.com/thosakwe/json_god) to add Annotation Support. 
 
-The ***new and improved*** definitive solution for JSON in Dart.
+Most of the source code has been rewritten since then. json_conv focuses on Speed and does not support encoding for now. 
+
+Decoding of json Strings compared to Dartson and json_god:
+JSON.decode took: 741ms
+json_conv took: 3495ms
+json_conv map took: 7583ms
+json_god took: 9474ms
+dartson took: 42433ms
+
 
 
 # Installation
     dependencies:
-        json_god: ^2.0.0-beta
+      json_conv: 
+        git:
+        url: git://github.com/Kemonozume/json_conv.git
+        ref: 91460620483295f31fecb0b1d6496ef347a2b21f
+
 
 # Usage
 
-It is recommended to import the library under an alias, i.e., `god`.
-
-```dart
-import 'package:json_god/json_god.dart' as god;
-
-// Set .debug to true to print VERY VERBOSE debug output.
-// god.debug = true;
-```
+Check out the Tests to see how to use json_conv. 
 
 ## Dart2JS Compatibility
-**IMPORTANT - Reflection through dart:mirrors is not yet perfect in Dart2JS. Make sure
-to add a `@MirrorsUsed()` annotation to any classes you want to serialize/deserialize.**
-
-```dart
-library app;
-
-@MirrorsUsed(targets: 'app')
-import 'dart:mirrors';
-```
-
+json_conv does not support Transformers for now and you need to use `@MirrorUsed`. 
 `@MirrorsUsed` documentation can be found [here](https://api.dartlang.org/1.14.2/dart-mirrors/MirrorsUsed-class.html).
 
-## Serializing JSON
-
-Simply call `god.serialize(x)` to synchronously transform an object into a JSON
-string.
-```dart
-Map map = {"foo": "bar", "numbers": [1, 2, {"three": 4}]};
-
-// Output: {"foo":"bar","numbers":[1,2,{"three":4]"}
-String json = god.serialize(map);
-print(json);
-```
-
-You can easily serialize classes, too. JSON God also supports classes as members.
-```dart
-class A {
-    String foo;
-    A(this.foo);
-}
-
-class B {
-    String hello;
-    A nested;
-    B(String hello, String foo) {
-      this.hello = hello;
-      this.nested = new A(foo);
-    }
-}
-
-main() {
-    God god = new God();
-    print(god.serialize(new B("world", "bar")));
-}
-
-// Output: {"hello":"world","nested":{"foo":"bar"}}
-```
-
-If a class has a `toJson` method, it will be called instead.
-
-## Deserializing JSON
+## FIXME ;)
 
 Deserialization is equally easy, and is provided through `god.deserialize`.
 ```dart
@@ -116,24 +74,3 @@ HasAnInt invalid = god.deserialize('["some invalid input"]', HasAnInt);
 // Throws an error
 ```
 
-# Validation
-You can also enforce validation rules, thanks to the `json_schema` package.
-Both `serialize` and `deserialize` support a named parameter, `schema`. Alternatively,
-use the `WithSchema` or `WithSchemaUrl` annotations on your classes.
-
-```dart
-@WithSchema(const {})
-
-@WithSchemaUrl("url")
-```
-
-An exception will be thrown if validation fails.
-
-# Thank you for using JSON God
-
-Thank you for using this library. I hope you like it.
-
-Feel free to follow me on Twitter: 
-[@thosakwe](http://twitter.com/thosakwe)
-
-Or, check out [my blog](http://blog.thosakwe.com)

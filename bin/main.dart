@@ -1,7 +1,5 @@
 import 'package:logging/logging.dart';
-import 'package:dartson/dartson.dart' as d;
 
-@d.Entity()
 class Simple {
   int id;
   String text;
@@ -14,7 +12,6 @@ class Simple {
   }
 }
 
-@d.Entity()
 class Test6 {
   List<Simple> simple;
 
