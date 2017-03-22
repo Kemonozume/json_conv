@@ -102,7 +102,14 @@ class BaseSetter<T> {
       }
       if (info.isComplex) {
         final ele = info.elements[keys[pos]];
-        if (ele == null || ele.ignore) {
+        if (ele == null) {
+          if (vals[pos] is Map || vals[pos] is List) {
+            pos -= vals[pos].length;
+            continue;
+          } else {
+            continue;
+          }
+        } else if (ele.ignore) {
           continue;
         } else {
           info.isPrimitive =
