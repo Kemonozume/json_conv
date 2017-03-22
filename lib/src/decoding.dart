@@ -148,7 +148,7 @@ T _decodeMap<T>(Object m, Type type) {
 
   if (info.isComplex) {
     setter = new _ComplexSetter<T>(info);
-  } else if (info.isList && T is List) {
+  } else if (info.isList) {
     //FIXME
     setter = new _ListSetter();
   } else {
@@ -156,31 +156,33 @@ T _decodeMap<T>(Object m, Type type) {
   }
 
   //iterate over info.elements instead of m
-
-  if (m is Map) {
-    m.forEach((k, v) {
-      final ele = info.elements[k];
-      if (ele == null || ele.ignore) {
-        return;
-      }
-      if (ele.isPrimitive) {
-        setter.add(k, v);
-      } else {
-        setter.add(k, _decodeMap(v, ele.type));
-      }
-    });
-  } else if (m is List) {
+  if (m is List) {
     if (info.isPrimitive) {
-      m.forEach((v) {
-        setter.add(0, v);
-      });
+      m.forEach((v) => setter.add(0, v));
     } else {
-      m.forEach((v) {
-        setter.add(0, _decodeMap(v, info.listType));
+      m.forEach((v) => setter.add(0, _decodeMap(v, info.listType)));
+    }
+  } else if (m is Map) {
+    if (info.isComplex) {
+      info.elements.keys
+          .where((key) => m[key] != null && !info.elements[key].ignore)
+          .forEach((key) {
+        if (info.elements[key].isPrimitive) {
+          setter.add(key, m[key]);
+        } else {
+          setter.add(key, _decodeMap(m[key], info.elements[key].type));
+        }
+      });
+    } else if (info.isMap) {
+      m.forEach((k, v) {
+        if (info.isPrimitive) {
+          setter.add(k, v);
+        } else {
+          setter.add(k, _decodeMap(v, info.mapType));
+        }
       });
     }
   }
-
   return setter.obj();
 }
 
