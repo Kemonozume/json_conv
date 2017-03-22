@@ -172,7 +172,9 @@ T _decodeMap<T>(Object m, Type type) {
 
   //iterate over info.elements instead of m
   if (m is List) {
-    if (info.isPrimitive) {
+    if (convMap.containsKey(info.listType)) {
+      m.forEach((v) => setter.add(0, convMap[info.type](v)));
+    } else if (info.isPrimitive) {
       m.forEach((v) => setter.add(0, v));
     } else {
       m.forEach((v) => setter.add(0, _decodeMap(v, info.listType)));
@@ -182,7 +184,9 @@ T _decodeMap<T>(Object m, Type type) {
       info.elements.keys
           .where((key) => m[key] != null && !info.elements[key].ignore)
           .forEach((key) {
-        if (info.elements[key].isPrimitive) {
+        if (convMap.containsKey(info.elements[key].type)) {
+          setter.add(key, convMap[info.elements[key].type](m[key]));
+        } else if (info.elements[key].isPrimitive) {
           setter.add(key, m[key]);
         } else {
           setter.add(key, _decodeMap(m[key], info.elements[key].type));
@@ -190,7 +194,9 @@ T _decodeMap<T>(Object m, Type type) {
       });
     } else if (info.isMap) {
       m.forEach((k, v) {
-        if (info.isPrimitive) {
+        if (convMap.containsKey(info.mapType)) {
+          setter.add(k, convMap[info.mapType](v));
+        } else if (info.isPrimitive) {
           setter.add(k, v);
         } else {
           setter.add(k, _decodeMap(v, info.mapType));
