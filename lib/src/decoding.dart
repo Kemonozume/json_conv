@@ -2,7 +2,7 @@ part of json_conv;
 
 Map<Type, Function> convMap = <Type, Function>{
   DateTime: (value) {
-    final res;
+    var res;
     try {
       res = DateTime.parse(value);
     } catch (e) {
