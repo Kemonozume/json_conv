@@ -1,16 +1,6 @@
 part of json_conv;
 
-Map<Type, Function> convMap = <Type, Function>{
-  DateTime: (value) {
-    var res;
-    try {
-      res = DateTime.parse(value);
-    } catch (e) {
-      print(e);
-    }
-    return res;
-  }
-};
+final Map<Type, TypeTransformer> _convMap = <Type, TypeTransformer>{};
 
 abstract class _ISetter<T> {
   void add(dynamic key, dynamic value);
@@ -130,8 +120,8 @@ class BaseSetter<T> {
         }
       }
       if (info.isMap) type = info.mapType;
-      if (convMap.containsKey(type)) {
-        setter.add(key, convMap[type](vals[pos]));
+      if (_convMap.containsKey(type)) {
+        setter.add(key, _convMap[type].decode(vals[pos]));
       } else if (info.isPrimitive) {
         setter.add(key, vals[pos]);
       } else {
@@ -178,8 +168,8 @@ T _decodeMap<T>(Object m, Type type) {
 
   //iterate over info.elements instead of m
   if (m is List) {
-    if (convMap.containsKey(info.listType)) {
-      m.forEach((v) => setter.add(0, convMap[info.type](v)));
+    if (_convMap.containsKey(info.listType)) {
+      m.forEach((v) => setter.add(0, _convMap[info.type].decode(v)));
     } else if (info.isPrimitive) {
       m.forEach((v) => setter.add(0, v));
     } else {
@@ -190,8 +180,8 @@ T _decodeMap<T>(Object m, Type type) {
       info.elements.keys
           .where((key) => m[key] != null && !info.elements[key].ignore)
           .forEach((key) {
-        if (convMap.containsKey(info.elements[key].type)) {
-          setter.add(key, convMap[info.elements[key].type](m[key]));
+        if (_convMap.containsKey(info.elements[key].type)) {
+          setter.add(key, _convMap[info.elements[key].type].decode(m[key]));
         } else if (info.elements[key].isPrimitive) {
           setter.add(key, m[key]);
         } else {
@@ -200,8 +190,8 @@ T _decodeMap<T>(Object m, Type type) {
       });
     } else if (info.isMap) {
       m.forEach((k, v) {
-        if (convMap.containsKey(info.mapType)) {
-          setter.add(k, convMap[info.mapType](v));
+        if (_convMap.containsKey(info.mapType)) {
+          setter.add(k, _convMap[info.mapType].decode(v));
         } else if (info.isPrimitive) {
           setter.add(k, v);
         } else {
