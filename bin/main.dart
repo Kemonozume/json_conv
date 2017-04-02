@@ -10,15 +10,6 @@ void test<T>(Type i) {
   print("${d == i}");
 }
 
-final json = '{"obj":{"time": "2017-02-09T12:05:38.387000+00:00"}}';
-
-class DateTimeTest {
-  DateTimeTest2 obj;
-}
-
-class DateTimeTest2 {
-  DateTime time;
-}
 
 class Person {
   String name;
@@ -51,9 +42,6 @@ void main() {
   });
 
   registerDateTransformer();
-
-  // final sample = decodeObj<DateTimeTest>(JSON.decode(json), DateTimeTest);
-  // print(sample.obj.time.toString());
 
   // final person = new Person();
   // person.name = "testname";

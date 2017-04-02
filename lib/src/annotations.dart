@@ -11,5 +11,21 @@ class Property {
         this.name = name;
 
   bool get ignore => _ignore == null ? false : _ignore;
-  bool get hasName => (name == null) ? false : (name.isEmpty) ? false : true;
+}
+
+/// TypeFinder is a function that has to return the wanted type
+/// using the key and val to determine the wanted type
+typedef Type TypeFinder(String key, dynamic val);
+
+class CImpl {
+  final String key;
+  final TypeFinder finder;
+
+  const CImpl(this.key, this.finder);
+}
+
+class Impl {
+  final Type type;
+
+  const Impl(this.type);
 }

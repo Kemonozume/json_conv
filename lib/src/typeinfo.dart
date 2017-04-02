@@ -15,6 +15,8 @@ bool _isPrimitive(Type value) {
 class _Element {
   final Type type;
   final Symbol symbol;
+  CImpl cimpl;
+  Impl impl;
   bool isMap;
   Type mapType;
   bool isList;
@@ -105,27 +107,19 @@ _TypeInfo _generateElements(Type type) {
       String key = MirrorSystem.getName(dm.simpleName);
       final symbol = dm.simpleName;
       //check for annotation
-      bool ignore = false;
-      if (dm.metadata.length > 0) {
-        final im = dm.metadata.firstWhere((s) {
-          if (!s.hasReflectee) return false;
-          if (s.reflectee.runtimeType == Property) return true;
-          return false;
-        }, orElse: () => null);
-        if (im != null && im.reflectee is Property) {
-          //if we found an annotation check if its not empty and use it as key
-          if (im.reflectee.hasName && !im.reflectee.ignore) {
-            key = im.reflectee.name;
-          }
-          if (im.reflectee.ignore) {
-            ignore = im.reflectee.ignore;
-          }
-        }
-      }
+
       if (dm.type.hasReflectedType) {
         final t = dm.type.reflectedType;
         final element = new _Element(symbol, t);
-        element.ignore = ignore;
+
+        Property prop = getAnnotation<Property>(dm.metadata);
+        if (prop != null) {
+          element.ignore = prop.ignore ?? false;
+          key = prop.name ?? key;
+        }
+        element.cimpl = getAnnotation<CImpl>(dm.metadata);
+        element.impl = getAnnotation<Impl>(dm.metadata);
+
         element.isPrimitive = _isPrimitive(t);
         if (dm.type.isAssignableTo(_mirMap)) {
           element.isMap = true;
@@ -159,4 +153,14 @@ _TypeInfo _generateElements(Type type) {
       classMirror, isPrimitive);
   _cache[type] = tp;
   return tp;
+}
+
+T getAnnotation<T>(List<InstanceMirror> l) {
+  if (l.length < 1) return null;
+  final mir = l.firstWhere((s) {
+    if (!s.hasReflectee) return false;
+    if (s.reflectee.runtimeType == T) return true;
+    return false;
+  }, orElse: () => null);
+  return mir?.reflectee ?? null;
 }
