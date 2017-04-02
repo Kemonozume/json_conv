@@ -9,6 +9,7 @@ part 'src/annotations.dart';
 part 'src/decoding.dart';
 part 'src/typeinfo.dart';
 part 'src/transformer.dart';
+part 'src/encoding.dart';
 
 final Logger _logger = new Logger("json_conv");
 
@@ -31,7 +32,7 @@ class _DateTransformer extends TypeTransformer<DateTime> {
   @override
   String encode(DateTime value) {
     if (value == null) return "null";
-    return value.toUtc().toIso8601String();
+    return value.toIso8601String();
   }
 }
 
