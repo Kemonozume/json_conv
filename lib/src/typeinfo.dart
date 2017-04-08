@@ -1,7 +1,8 @@
 part of json_conv;
 
-var _mirList = reflectType(List);
-var _mirMap = reflectType(Map);
+final _mirList = reflectType(List);
+final _mirMap = reflectType(Map);
+final _emptySymbol = new Symbol("");
 
 bool _isPrimitive(Type value) {
   return value == num ||
@@ -12,91 +13,99 @@ bool _isPrimitive(Type value) {
       value == double;
 }
 
+enum _CmplxType { MAP, LIST, OBJECT, PRIMITIVE, TYPESEEKER }
+
 class _Element {
-  final Type type;
-  final Symbol symbol;
-  CImpl cimpl;
-  Impl impl;
-  bool isMap;
-  Type mapType;
-  bool isList;
-  Type listType;
-  bool ignore;
-  bool isPrimitive;
+  Symbol symbol;
+  Type type;
+  _CmplxType ctype;
+  Map<String, _Element> children;
+  TypeSeeker typeSeeker;
+  Implementation impl;
+  Property prop;
+  ClassMirror cm;
 
-  _Element(this.symbol, this.type);
+  _Element();
 
-  bool get isComplex => !isList && !isMap;
-  @override
-  String toString() {
-    return "_Element<type> symbol: $symbol, isMap: $isMap, isList: $isList";
-  }
-}
+  _Element.withSymbol(this.symbol, {this.type, this.ctype});
 
-class _TypeInfo {
-  final Type type;
-  final ClassMirror mir;
-  final Map<String, _Element> elements;
-  bool isMap;
-  Type mapType;
-  bool isList;
-  Type listType;
-  //only interesting if type is map or list
-  bool isPrimitive;
-
-  _TypeInfo(this.type, this.elements, this.isMap, this.mapType, this.isList,
-      this.listType, this.mir, this.isPrimitive);
-  bool get isComplex => !isList && !isMap;
+  bool get ignore => (prop != null) ? prop.ignore : false;
 
   @override
   String toString() {
-    return "class $type:\n" +
-        elements.values.fold("", (a, b) => a + b.toString() + "\n");
+    return "_Element<$type> symbol: $symbol, ctype: $ctype";
   }
 }
 
-final _cache = <Type, _TypeInfo>{};
+final _cache = <Type, _Element>{};
 
-_TypeInfo _generateElements(Type type) {
+_Element _generateElements(Type type) {
   if (_cache.containsKey(type)) {
     return _cache[type];
   }
+
   final classMirror = reflectClass(type);
   final typeMirror = reflectType(type);
-  final elements = new Map<String, _Element>();
-  bool isMap = false;
-  bool isList = false;
-  bool isPrimitive;
+  final ele = new _Element.withSymbol(classMirror.simpleName);
 
-  Type mapType;
-  Type listType;
+  ele.cm = classMirror;
 
+  ele.prop = getAnnotation(classMirror.metadata, Property) as Property;
+  ele.typeSeeker =
+      getAnnotation(classMirror.metadata, TypeSeeker) as TypeSeeker;
+  ele.impl =
+      getAnnotation(classMirror.metadata, Implementation) as Implementation;
+  ele.type = type;
+
+  if (_isPrimitive(type)) {
+    ele.ctype = _CmplxType.PRIMITIVE;
+    return ele;
+  }
+
+  _CmplxType ctype = _CmplxType.LIST;
+  int index = 0;
   if (typeMirror.isAssignableTo(_mirMap)) {
-    isMap = true;
+    index = 1;
+    ctype = _CmplxType.MAP;
+  }
+  if (typeMirror.isAssignableTo(_mirMap) ||
+      typeMirror.isAssignableTo(_mirList)) {
     final List<TypeMirror> typeArguments = typeMirror.typeArguments;
-    if (typeArguments.length > 1) {
-      if (typeArguments[1].hasReflectedType) {
-        mapType = typeArguments[1].reflectedType;
-        isPrimitive = _isPrimitive(mapType);
-      }
+    _CmplxType typ;
+    if (typeArguments[index].isAssignableTo(_mirMap)) {
+      typ = _CmplxType.MAP;
+    } else if (typeArguments[index].isAssignableTo(_mirList)) {
+      typ = _CmplxType.LIST;
+    } else if (_isPrimitive(typeArguments[index].reflectedType)) {
+      typ = _CmplxType.PRIMITIVE;
+    } else {
+      typ = _CmplxType.OBJECT;
     }
+
+    ele.ctype = ctype;
+    ele.children = {
+      "": new _Element.withSymbol(_emptySymbol,
+          type: typeArguments[index].reflectedType, ctype: typ)
+    };
+    _cache[type] = ele;
+    return ele;
   }
 
-  if (typeMirror.isAssignableTo(_mirList)) {
-    isList = true;
-    final List<TypeMirror> typeArguments = typeMirror.typeArguments;
-    if (typeArguments.length > 0) {
-      if (typeArguments[0].hasReflectedType) {
-        listType = typeArguments[0].reflectedType;
-        isPrimitive = _isPrimitive(listType);
-      }
-    }
+  if (ele.typeSeeker != null) {
+    ele.ctype == _CmplxType.TYPESEEKER;
+    _cache[type] = ele;
+    return ele;
   }
+
+  ele.ctype = _CmplxType.OBJECT;
+
+  ele.children = new Map<String, _Element>();
+
   //check super class until we hit Object
   if (classMirror.superclass?.hasReflectedType ?? false) {
     if (classMirror.superclass.reflectedType != Object) {
-      final info = _generateElements(classMirror.superclass.reflectedType);
-      elements.addAll(info.elements);
+      ele.children.addAll(
+          _generateElements(classMirror.superclass.reflectedType).children);
     }
   }
   //check fields
@@ -104,63 +113,65 @@ _TypeInfo _generateElements(Type type) {
       .where((dm) => dm is VariableMirror)
       .forEach((dm) {
     if (dm is VariableMirror) {
+      final chEle = new _Element.withSymbol(dm.simpleName);
+
       String key = MirrorSystem.getName(dm.simpleName);
-      final symbol = dm.simpleName;
       //check for annotation
+      chEle.prop = getAnnotation(dm.metadata, Property) as Property;
+      if (chEle.prop != null) {
+        key = chEle.prop.name ?? key;
+      }
+      chEle.typeSeeker = getAnnotation(dm.metadata, TypeSeeker) as TypeSeeker;
+      chEle.impl = getAnnotation(dm.metadata, Implementation) as Implementation;
 
-      if (dm.type.hasReflectedType) {
-        final t = dm.type.reflectedType;
-        final element = new _Element(symbol, t);
+      if (dm.type.hasReflectedType || chEle.impl != null) {
+        Type chType = dm.type.reflectedType;
+        if (chEle.impl != null) chType = chEle.impl.type;
+        chEle.type = chType;
 
-        Property prop = getAnnotation<Property>(dm.metadata);
-        if (prop != null) {
-          element.ignore = prop.ignore ?? false;
-          key = prop.name ?? key;
+        if (_isPrimitive(chEle.type)) {
+          chEle.ctype = _CmplxType.PRIMITIVE;
+          ele.children[key] = chEle;
+          return;
         }
-        element.cimpl = getAnnotation<CImpl>(dm.metadata);
-        element.impl = getAnnotation<Impl>(dm.metadata);
 
-        element.isPrimitive = _isPrimitive(t);
-        if (dm.type.isAssignableTo(_mirMap)) {
-          element.isMap = true;
-          final List<TypeMirror> typeArguments = dm.type.typeArguments;
-          if (typeArguments.length > 1) {
-            if (typeArguments[1].hasReflectedType) {
-              element.mapType = typeArguments[1].reflectedType;
-              element.isPrimitive = _isPrimitive(element.mapType);
-            }
+        if (chEle.typeSeeker != null) {
+          //might be map or list
+          final _ele2 = _generateElements(chEle.type);
+          if (_ele2.ctype == _CmplxType.LIST || _ele2.ctype == _CmplxType.MAP) {
+            ele.children[key] = _ele2;
+            ele.children[key].symbol = chEle.symbol;
+            ele.children[key].children.values.first.typeSeeker =
+                chEle.typeSeeker;
+            ele.children[key].children.values.first.ctype =
+                _CmplxType.TYPESEEKER;
+          } else {
+            chEle.ctype = _CmplxType.TYPESEEKER;
+            ele.children[key] = chEle;
+            return;
           }
-        } else {
-          element.isMap = false;
         }
-        if (dm.type.isAssignableTo(_mirList)) {
-          element.isList = true;
-          final List<TypeMirror> typeArguments = typeMirror.typeArguments;
-          if (typeArguments.length > 0) {
-            if (typeArguments[0].hasReflectedType) {
-              element.listType = typeArguments[0].reflectedType;
-              element.isPrimitive = _isPrimitive(element.listType);
-            }
-          }
-        } else {
-          element.isList = false;
-        }
-        elements[key] = element;
+
+        ele.children[key] = _generateElements(chEle.type);
+        ele.children[key].symbol = chEle.symbol;
+      } else {
+        ele.children[key] = chEle;
       }
     }
   });
-  final tp = new _TypeInfo(type, elements, isMap, mapType, isList, listType,
-      classMirror, isPrimitive);
-  _cache[type] = tp;
-  return tp;
+  _cache[type] = ele;
+  return ele;
 }
 
-T getAnnotation<T>(List<InstanceMirror> l) {
-  if (l.length < 1) return null;
+dynamic getAnnotation(List<InstanceMirror> l, Type type) {
   final mir = l.firstWhere((s) {
     if (!s.hasReflectee) return false;
-    if (s.reflectee.runtimeType == T) return true;
+    if (s.reflectee.runtimeType == type) return true;
     return false;
   }, orElse: () => null);
-  return mir?.reflectee ?? null;
+  if (mir?.hasReflectee ?? false) {
+    return mir.reflectee;
+  } else {
+    return null;
+  }
 }

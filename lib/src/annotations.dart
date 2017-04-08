@@ -15,17 +15,17 @@ class Property {
 
 /// TypeFinder is a function that has to return the wanted type
 /// using the key and val to determine the wanted type
-typedef Type TypeFinder(String key, dynamic val);
+typedef Type TypeFinder(dynamic val);
 
-class CImpl {
+class TypeSeeker {
   final String key;
   final TypeFinder finder;
 
-  const CImpl(this.key, this.finder);
+  const TypeSeeker(this.key, this.finder);
 }
 
-class Impl {
+class Implementation {
   final Type type;
 
-  const Impl(this.type);
+  const Implementation(this.type);
 }

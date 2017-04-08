@@ -39,11 +39,11 @@ class _ListSetter<T extends List> implements _ISetter<T> {
 
 class _ComplexSetter<T> implements _ISetter<T> {
   InstanceMirror instance;
-  final _TypeInfo info;
+  final _Element info;
 
   _ComplexSetter(this.info) {
     try {
-      instance = info.mir.newInstance(new Symbol(""), []);
+      instance = info.cm.newInstance(_emptySymbol, []);
     } catch (e) {
       print(info);
       print(info.type);
@@ -55,7 +55,7 @@ class _ComplexSetter<T> implements _ISetter<T> {
   void add(dynamic key, dynamic val) {
     var ele;
     try {
-      ele = info.elements[key];
+      ele = info.children[key];
       if (ele != null) {
         instance.setField(ele.symbol, val);
       }
@@ -73,63 +73,108 @@ class _ComplexSetter<T> implements _ISetter<T> {
 }
 
 class BaseSetter<T> {
-  final _TypeInfo _info;
+  final _Element _info;
   final List keys;
   final List vals;
   int pos;
 
   BaseSetter(this._info, this.keys, this.vals);
 
-  T _decodeObj<T>(Type type) {
+  Object _decodeObj(Type type) {
     final info = _generateElements(type);
-    _ISetter setter;
-
-    if (info.isComplex) {
-      setter = new _ComplexSetter(info);
-    } else if (info.isList) {
-      setter = new _ListSetter();
-    } else {
-      setter = new _MapSetter();
+    final length = vals[pos].length;
+    if (info.prop?.ignore ?? false) {
+      pos -= length;
+      return null;
     }
 
-    final length = vals[pos].length;
-
-    for (int i = 0; i < length; i++) {
-      pos--;
-      Type type;
-      dynamic key = keys[pos];
-      if (info.isList) {
-        type = info.listType;
-        key = i;
-      }
-      if (info.isComplex) {
-        final ele = info.elements[keys[pos]];
-        if (ele == null) {
-          if (vals[pos] is Map || vals[pos] is List) {
-            pos -= vals[pos].length;
-            continue;
+    switch (info.ctype) {
+      case _CmplxType.LIST:
+        final list = new List(length);
+        for (int i = 0; i < length; i++) {
+          pos--;
+          if (info.children.values.first.ctype == _CmplxType.PRIMITIVE) {
+            list[i] = vals[pos];
+          } else if (_convMap.containsKey(info.children.values.first.type)) {
+            list[i] =
+                _convMap[info.children.values.first.type].decode(vals[pos]);
+          } else if (info.children.values.first.ctype ==
+              _CmplxType.TYPESEEKER) {
+            Type type = _getTypeSeeker(info.children.values.first);
+            list[i] = _decodeObj(type);
           } else {
+            list[i] = _decodeObj(info.children.values.first.type);
+          }
+        }
+        return list;
+      case _CmplxType.MAP:
+        final map = new Map<String, dynamic>();
+        for (int i = 0; i < length; i++) {
+          pos--;
+          if (info.children.values.first.ctype == _CmplxType.PRIMITIVE) {
+            map[keys[pos]] = vals[pos];
+          } else if (_convMap.containsKey(info.children.values.first.type)) {
+            map[keys[pos]] =
+                _convMap[info.children.values.first.type].decode(vals[pos]);
+          } else {
+            map[keys[pos]] = _decodeObj(info.children.values.first.type);
+          }
+        }
+        return map;
+      case _CmplxType.OBJECT:
+        final instance = info.cm.newInstance(_emptySymbol, []);
+        _Element ele;
+        for (int i = 0; i < length; i++) {
+          pos--;
+          ele = info.children[keys[pos]];
+          if (ele == null) {
+            if (vals[pos] is Map || vals[pos] is List) {
+              pos -= vals[pos].length;
+              continue;
+            } else {
+              continue;
+            }
+          } else if (ele.ignore) {
             continue;
           }
-        } else if (ele.ignore) {
-          continue;
-        } else {
-          info.isPrimitive =
-              (ele.isMap || ele.isList) ? false : ele.isPrimitive;
-          type = ele.type;
+          if (ele.ctype == _CmplxType.PRIMITIVE) {
+            instance.setField(ele.symbol, vals[pos]);
+          } else if (_convMap.containsKey(ele.type)) {
+            instance.setField(ele.symbol, _convMap[ele.type].decode(vals[pos]));
+          } else if (ele.ctype == _CmplxType.TYPESEEKER) {
+            Type type = _getTypeSeeker(ele);
+            instance.setField(ele.symbol, _decodeObj(type));
+          } else {
+            instance.setField(ele.symbol, _decodeObj(ele.type));
+          }
         }
-      }
-      if (info.isMap) type = info.mapType;
-      if (_convMap.containsKey(type)) {
-        setter.add(key, _convMap[type].decode(vals[pos]));
-      } else if (info.isPrimitive) {
-        setter.add(key, vals[pos]);
-      } else {
-        setter.add(key, _decodeObj(type));
+        return instance.reflectee;
+      case _CmplxType.TYPESEEKER:
+        if (info.typeSeeker == null ||
+            info.typeSeeker.key == null ||
+            info.typeSeeker.key.isEmpty ||
+            info.typeSeeker.finder == null)
+          throw new StateError("typeseeker not configured correctly");
+        Type type = _getTypeSeeker(info);
+        if (type == null) return null;
+        return _decodeObj(type);
+      default:
+        throw new StateError("base object cant be primitive");
+    }
+  }
+
+  Type _getTypeSeeker(_Element ele) {
+    Type type;
+    int length;
+    if (vals[pos] is Map) length = vals[pos].values.length;
+    if (vals[pos] is List) length = vals[pos].length;
+    for (int i = pos; i >= pos - length; i--) {
+      if (keys[i] == ele.typeSeeker.key) {
+        type = ele.typeSeeker.finder(vals[i]);
+        break;
       }
     }
-
-    return setter.obj();
+    return type;
   }
 
   T obj() {
@@ -157,45 +202,51 @@ T _decodeMap<T>(Object m, Type type) {
   final info = _generateElements(type);
   _ISetter setter;
 
-  if (info.isComplex) {
-    setter = new _ComplexSetter<T>(info);
-  } else if (info.isList) {
-    //FIXME
-    setter = new _ListSetter();
-  } else {
-    setter = new _MapSetter();
+  switch (info.ctype) {
+    case _CmplxType.LIST:
+      setter = new _ListSetter();
+      break;
+    case _CmplxType.MAP:
+      setter = new _MapSetter();
+      break;
+    case _CmplxType.OBJECT:
+      setter = new _ComplexSetter<T>(info);
+      break;
+    default:
+      throw new StateError("base object cant be primitive");
   }
 
   //iterate over info.elements instead of m
   if (m is List) {
-    if (_convMap.containsKey(info.listType)) {
+    if (_convMap.containsKey(info.children.values.first.type)) {
       m.forEach((v) => setter.add(0, _convMap[info.type].decode(v)));
-    } else if (info.isPrimitive) {
+    } else if (info.children.values.first.ctype == _CmplxType.PRIMITIVE) {
       m.forEach((v) => setter.add(0, v));
     } else {
-      m.forEach((v) => setter.add(0, _decodeMap(v, info.listType)));
+      m.forEach(
+          (v) => setter.add(0, _decodeMap(v, info.children.values.first.type)));
     }
   } else if (m is Map) {
-    if (info.isComplex) {
-      info.elements.keys
-          .where((key) => m[key] != null && !info.elements[key].ignore)
+    if (info.ctype == _CmplxType.OBJECT) {
+      info.children.keys
+          .where((key) => m[key] != null && !info.children[key].ignore)
           .forEach((key) {
-        if (_convMap.containsKey(info.elements[key].type)) {
-          setter.add(key, _convMap[info.elements[key].type].decode(m[key]));
-        } else if (info.elements[key].isPrimitive) {
+        if (_convMap.containsKey(info.children[key].type)) {
+          setter.add(key, _convMap[info.children[key].type].decode(m[key]));
+        } else if (info.children[key].ctype == _CmplxType.PRIMITIVE) {
           setter.add(key, m[key]);
         } else {
-          setter.add(key, _decodeMap(m[key], info.elements[key].type));
+          setter.add(key, _decodeMap(m[key], info.children[key].type));
         }
       });
-    } else if (info.isMap) {
+    } else if (info.ctype == _CmplxType.MAP) {
       m.forEach((k, v) {
-        if (_convMap.containsKey(info.mapType)) {
-          setter.add(k, _convMap[info.mapType].decode(v));
-        } else if (info.isPrimitive) {
+        if (_convMap.containsKey(info.children.values.first.type)) {
+          setter.add(k, _convMap[info.children.values.first.type].decode(v));
+        } else if (info.children.values.first.ctype == _CmplxType.PRIMITIVE) {
           setter.add(k, v);
         } else {
-          setter.add(k, _decodeMap(v, info.mapType));
+          setter.add(k, _decodeMap(v, info.children.values.first.type));
         }
       });
     }
