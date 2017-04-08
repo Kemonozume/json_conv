@@ -2,7 +2,9 @@
 library json_conv;
 
 import 'dart:convert';
+@MirrorsUsed(metaTargets: const [Conv])
 import 'dart:mirrors';
+
 import 'package:logging/logging.dart';
 
 part 'src/annotations.dart';

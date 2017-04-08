@@ -13,6 +13,10 @@ class Property {
   bool get ignore => _ignore == null ? false : _ignore;
 }
 
+class Conv {
+  const Conv();
+}
+
 /// TypeFinder is a function that has to return the wanted type
 /// using the key and val to determine the wanted type
 typedef Type TypeFinder(dynamic val);
