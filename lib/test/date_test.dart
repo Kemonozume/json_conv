@@ -41,4 +41,12 @@ void main() {
     expect(sample.time,
         equals(DateTime.parse("2017-02-09T12:05:38.387000+00:00")));
   });
+
+  test('dateTimeEncoding', () {
+    final json = '{"time": "2017-02-09T12:05:38.387000+00:00"}';
+    final sample = decode<DateTimeTest>(json, DateTimeTest);
+
+    final json2 = encode(sample);
+    expect(json2.contains('"time":"2017-02-09T12:05:38.387Z"'), equals(true));
+  });
 }

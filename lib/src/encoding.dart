@@ -1,6 +1,5 @@
 part of json_conv;
 
-final _encoder = new JsonEncoder(_encodeObj);
 const _classOpen = 0x7B;
 const _classClose = 0x7D;
 const _arrayOpen = 0x5B;
@@ -10,55 +9,7 @@ const _quote = 0x22;
 const _colon = 0x3A;
 
 String encode(Object obj) {
-  return _encoder.convert(obj);
-}
-
-String encode2(Object obj) {
   return new _Encoder().encode(obj);
-}
-
-dynamic _encodeObj(dynamic obj) {
-  if (obj is Map) {
-    obj.forEach((k, v) {
-      if (_isPrimitive(v)) {
-        obj[k] = v;
-      } else {
-        obj[k] = _encodeObj(v);
-      }
-    });
-    return obj;
-  } else if (obj is List) {
-    return obj.map((k) {
-      if (_isPrimitive(k.runtimeType)) return k;
-      return _encodeObj(k);
-    }).toList();
-  } else {
-    //complex obj
-    //check if its in the convMap first
-    if (_convMap.containsKey(obj.runtimeType)) {
-      return _convMap[obj.runtimeType].encode(obj);
-    } else {
-      return _objectToMap(obj);
-    }
-  }
-}
-
-Map _objectToMap(Object obj) {
-  final info = _generateElements(obj.runtimeType);
-  final m = <String, dynamic>{};
-  info.children.forEach((k, v) {
-    if (v.ignore) return;
-    final im = reflect(obj);
-    final key = v.prop?.name ?? k;
-    final val = im.getField(v.symbol).reflectee;
-    if (_isPrimitive(val.runtimeType)) {
-      m[key] = val;
-    } else {
-      m[key] = _encodeObj(val);
-    }
-  });
-
-  return m;
 }
 
 class _Encoder {
@@ -122,7 +73,14 @@ class _Encoder {
       buffer.writeCharCode(_arrayClose);
     } else {
       if (_convMap.containsKey(obj.runtimeType)) {
-        buffer.write(_convMap[obj.runtimeType].encode(obj));
+        final val = _convMap[obj.runtimeType].encode(obj);
+        if (val is String) {
+          buffer.writeCharCode(_quote);
+          buffer.write(val);
+          buffer.writeCharCode(_quote);
+        } else {
+          buffer.write(val);
+        }
       } else {
         buffer.writeCharCode(_classOpen);
         final info = _generateElements(obj.runtimeType);
@@ -154,7 +112,7 @@ class _Encoder {
           }
 
           if (i != last) {
-            buffer.writeCharCode(_colon);
+            buffer.writeCharCode(_comma);
           }
         }
         buffer.writeCharCode(_classClose);
