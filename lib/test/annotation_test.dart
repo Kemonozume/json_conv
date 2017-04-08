@@ -8,7 +8,8 @@ void main() {
     final sample = conv.decode<AnnotationSample>(json, AnnotationSample);
 
     expect(sample, new isInstanceOf<AnnotationSample>());
-    expect(sample, equals(orig));
+    expect(sample.id, equals(orig.id));
+    expect(sample.text, equals(orig.text));
   });
 
   test('wrongNamedAnnotation', () {
@@ -49,9 +50,6 @@ class AnnotationSample {
   AnnotationSample();
 
   AnnotationSample.withValues(this.id, this.text);
-
-  bool operator ==(dynamic o) =>
-      o is AnnotationSample && o.id == id && o.text == text;
 }
 
 class AnnotationSample2 {
