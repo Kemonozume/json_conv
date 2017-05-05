@@ -19,8 +19,8 @@ dartson took: 42433ms
     dependencies:
       json_conv: 
         git:
-        url: git://github.com/Kemonozume/json_conv.git
-        ref: 653b2d2fdb795de933e317cd416b40d1b31902ac
+          url: git://github.com/Kemonozume/json_conv.git
+          ref: 653b2d2fdb795de933e317cd416b40d1b31902ac
 
 
 # Usage
@@ -70,6 +70,28 @@ class ExtendeeClass {
 
 The `@Conv` Annotation is only used to tell mirrors what classes are being used. You only need the `@Conv` Annotation for Dart2JS Compatibility and can safely be omitted if you are using the DartVM. 
 
+## Property Annotation
+
+The `@Property` Annotation lets you rewrite JSON keys and actively ignore properties. 
+
+
+```dart
+class AnnotationSample {
+  int id;
+
+  @Property(name: "test")
+  String text;
+
+  AnnotationSample();
+}
+
+void main() {
+    final json = '{"id":1, "test":"test text"}';
+    final sample = conv.decode(json, AnnotationSample);
+    print(sample.text);
+}
+```
+
 ## Implementation Annotation 
 
 The `@Implementation` Annotation enables you to use abstract classes in your JSON Data Structure and specify the Implementation of the abstract class with the help of the Annotation. 
@@ -100,7 +122,7 @@ void main() {
 }
 ```
 
-### TypeSeeker Annotation
+## TypeSeeker Annotation
 
 The `@TypeSeeker` Annotation enables you to specify the Type that should be used mid-parsing. You can specify what JSON Key you want to use to specify the Type of the generated object. 
 
@@ -147,7 +169,7 @@ void main() {
 }
 ```
 
-### TypeTransformer interface
+## TypeTransformer interface
 
 The `TypeTransformer<T>` Interface allows you to encode and decode a specific Type how you want. 
 
@@ -172,15 +194,15 @@ class _DateTransformer extends TypeTransformer<DateTime> {
 
 After creating a TypeTransformer you have to register the Transformer using the function `void registerTransformer(TypeTransformer t, Type type)`.
 
-### Roadmap
+## Roadmap
 
  - preserve order of lists
  - transformer for better Dart2JS compatibility
  - better exceptions
 
-### Credits
+## Credits
 
-The TypeTransformer Interface was written by [eredo](https://github.com/eredo).
+The TypeTransformer Interface and the Property Annotation were written by [eredo](https://github.com/eredo).
 
 
 
