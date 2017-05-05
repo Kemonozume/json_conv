@@ -7,10 +7,5 @@ homepage: https://github.com/Kemonozume/json_god
 environment:
   sdk: ">=1.22.1"
   
-dependencies:
-  logging: any 
-  json_god: ^2.0.0-beta
-  dartson: 0.2.6
-
 dev_dependencies:
   test: ^0.12.13+5
