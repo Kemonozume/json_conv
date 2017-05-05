@@ -49,7 +49,7 @@ class _Encoder {
           buffer.writeCharCode(_comma);
         }
       }
-      buffer.writeCharCode(125);
+      buffer.writeCharCode(_classClose);
     } else if (obj is List) {
       buffer.writeCharCode(_arrayOpen);
       final length = obj.length;
