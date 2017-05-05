@@ -80,7 +80,7 @@ class BaseSetter<T> {
 
   BaseSetter(this._info, this.keys, this.vals);
 
-  Object _decodeObj(Type type) {
+  T _decodeObj<T>(Type type) {
     final info = _generateElements(type);
     final length = vals[pos].length;
     if (info.prop?.ignore ?? false) {
@@ -100,13 +100,13 @@ class BaseSetter<T> {
                 _convMap[info.children.values.first.type].decode(vals[pos]);
           } else if (info.children.values.first.ctype ==
               _CmplxType.TYPESEEKER) {
-            Type type = _getTypeSeeker(info.children.values.first);
+            final type = _getTypeSeeker(info.children.values.first);
             list[i] = _decodeObj(type);
           } else {
             list[i] = _decodeObj(info.children.values.first.type);
           }
         }
-        return list;
+        return list as T;
       case _CmplxType.MAP:
         final map = new Map<String, dynamic>();
         for (int i = 0; i < length; i++) {
@@ -120,7 +120,7 @@ class BaseSetter<T> {
             map[keys[pos]] = _decodeObj(info.children.values.first.type);
           }
         }
-        return map;
+        return map as T;
       case _CmplxType.OBJECT:
         final instance = info.cm.newInstance(_emptySymbol, []);
         _Element ele;
@@ -142,7 +142,7 @@ class BaseSetter<T> {
           } else if (_convMap.containsKey(ele.type)) {
             instance.setField(ele.symbol, _convMap[ele.type].decode(vals[pos]));
           } else if (ele.ctype == _CmplxType.TYPESEEKER) {
-            Type type = _getTypeSeeker(ele);
+            final type = _getTypeSeeker(ele);
             instance.setField(ele.symbol, _decodeObj(type));
           } else {
             instance.setField(ele.symbol, _decodeObj(ele.type));
@@ -155,7 +155,7 @@ class BaseSetter<T> {
             info.typeSeeker.key.isEmpty ||
             info.typeSeeker.finder == null)
           throw new StateError("typeseeker not configured correctly");
-        Type type = _getTypeSeeker(info);
+        final type = _getTypeSeeker(info);
         if (type == null) return null;
         return _decodeObj(type);
       default:
@@ -172,6 +172,13 @@ class BaseSetter<T> {
       if (keys[i] == ele.typeSeeker.key) {
         type = ele.typeSeeker.finder(vals[i]);
         break;
+      }
+    }
+    if (type == null) {
+      type = ele.typeSeeker.finder(null);
+      if (type == null) {
+        throw new StateError(
+            "typeseeker failed to find type for ${ele.type}, ${ele.symbol.toString}, ${ele.ctype}");
       }
     }
     return type;
