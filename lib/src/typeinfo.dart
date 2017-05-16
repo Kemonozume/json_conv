@@ -40,9 +40,10 @@ class _Element {
 final _cache = <Type, _Element>{};
 
 _Element _generateElements(Type type) {
-  if (_cache.containsKey(type)) {
-    return _cache[type];
-  }
+  if (type == dynamic) throw new StateError("type cant be dynamic");
+  // if (_cache.containsKey(type)) {
+  //   return _cache[type];
+  // }
 
   final classMirror = reflectClass(type);
   final typeMirror = reflectType(type);
