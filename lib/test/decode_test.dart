@@ -270,4 +270,28 @@ void main() {
       expect(sample["person3"], equals("name3"));
     });
   });
+
+  group('failedDecoding', () {
+    test('riotApi', () {
+      final json =
+          '{"gameId":3185247146,"mapId":11,"gameMode":"CLASSIC","gameType":"MATCHED_GAME","gameQueueConfigId":420,"participants":[{"teamId":200,"spell1Id":4,"spell2Id":7,"championId":67,"profileIconId":666,"summonerName":"Ga\u00ealik","bot":false,"summonerId":19095292,"runes":[{"count":8,"runeId":5245},{"count":1,"runeId":5251},{"count":9,"runeId":5289},{"count":9,"runeId":5317},{"count":3,"runeId":5337}],"masteries":[{"rank":5,"masteryId":6114},{"rank":1,"masteryId":6122},{"rank":5,"masteryId":6134},{"rank":1,"masteryId":6142},{"rank":5,"masteryId":6311},{"rank":1,"masteryId":6323},{"rank":5,"masteryId":6331},{"rank":1,"masteryId":6343},{"rank":5,"masteryId":6351},{"rank":1,"masteryId":6361}]},{"teamId":200,"spell1Id":11,"spell2Id":4,"championId":5,"profileIconId":1149,"summonerName":"Gott","bot":false,"summonerId":41721903,"runes":[{"count":9,"runeId":5245},{"count":9,"runeId":5289},{"count":9,"runeId":5317},{"count":3,"runeId":5337}],"masteries":[{"rank":5,"masteryId":6111},{"rank":1,"masteryId":6122},{"rank":5,"masteryId":6134},{"rank":1,"masteryId":6143},{"rank":5,"masteryId":6151},{"rank":1,"masteryId":6162},{"rank":5,"masteryId":6311},{"rank":1,"masteryId":6321},{"rank":5,"masteryId":6331},{"rank":1,"masteryId":6341}]},{"teamId":200,"spell1Id":3,"spell2Id":4,"championId":103,"profileIconId":2072,"summonerName":"Floridaaah","bot":false,"summonerId":69771453,"runes":[{"count":9,"runeId":5273},{"count":3,"runeId":5289},{"count":6,"runeId":5296},{"count":9,"runeId":5316},{"count":3,"runeId":5357}],"masteries":[{"rank":5,"masteryId":6114},{"rank":1,"masteryId":6122},{"rank":1,"masteryId":6131},{"rank":4,"masteryId":6134},{"rank":1,"masteryId":6142},{"rank":5,"masteryId":6311},{"rank":1,"masteryId":6322},{"rank":4,"masteryId":6331},{"rank":1,"masteryId":6332},{"rank":1,"masteryId":6342},{"rank":5,"masteryId":6352},{"rank":1,"masteryId":6362}]}],"observers":{"encryptionKey":"7o5FHURhtW0DpbOk1D\/Mb\/eurvWY9V\/Q"},"platformId":"EUW1","bannedChampions":[{"championId":498,"teamId":100,"pickTurn":1},{"championId":60,"teamId":200,"pickTurn":2},{"championId":80,"teamId":100,"pickTurn":3},{"championId":105,"teamId":200,"pickTurn":4},{"championId":238,"teamId":100,"pickTurn":5},{"championId":117,"teamId":200,"pickTurn":6}],"gameStartTime":0,"gameLength":0}';
+
+      final sample = conv.decode<CurrentGameInfo>(json, CurrentGameInfo);
+
+      expect(sample, new isInstanceOf<CurrentGameInfo>());
+      expect(sample.gameId, equals(3185247146));
+      expect(sample.participants.length, equals(3));
+    });
+  });
+}
+
+class CurrentGameInfo {
+  List<CurrentGameParticipant> participants;
+  int gameId;
+}
+
+class CurrentGameParticipant {
+  int championId;
+  int summonerId;
+  int teamId;
 }

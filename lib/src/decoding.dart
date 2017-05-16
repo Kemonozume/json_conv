@@ -128,8 +128,21 @@ class BaseSetter<T> {
           pos--;
           ele = info.children[keys[pos]];
           if (ele == null) {
-            if (vals[pos] is Map || vals[pos] is List) {
+            if (vals[pos] is Map) {
+              // int length2 = vals[pos].length;
+              // for (int b = 0; b < length2; b++) {
+              //   pos--;
+              //   if (vals[pos] is Map || vals[pos] )
+              // }
+              //if is list check if next pos-- is object or list? get length of that multiple to list length ?
+
               pos -= vals[pos].length;
+              continue;
+            } else if (vals[pos] is List) {
+              if (vals[pos - 1] is List || vals[pos - 1] is Map) {
+                pos -= (vals[pos].length * vals[pos - 1].length) +
+                    vals[pos].length;
+              }
               continue;
             } else {
               continue;
@@ -162,6 +175,8 @@ class BaseSetter<T> {
         throw new StateError("base object cant be primitive");
     }
   }
+
+  int getLengthMap(int pos2) {}
 
   Type _getTypeSeeker(_Element ele) {
     Type type;

@@ -1,6 +1,7 @@
 import 'package:json_conv/json_conv.dart';
 import 'package:test/test.dart';
 
+@Conv()
 abstract class Person {
   int id;
   String name;
