@@ -39,11 +39,11 @@ class _Element {
 
 final _cache = <Type, _Element>{};
 
-_Element _generateElements(Type type) {
+_Element _generateElements(Type type, {bool isChild: false}) {
   if (type == dynamic) throw new StateError("type cant be dynamic");
-  // if (_cache.containsKey(type)) {
-  //   return _cache[type];
-  // }
+  if (_cache.containsKey(type) && !isChild) {
+    return _cache[type];
+  }
 
   final classMirror = reflectClass(type);
   final typeMirror = reflectType(type);
@@ -88,13 +88,17 @@ _Element _generateElements(Type type) {
       "": new _Element.withSymbol(_emptySymbol,
           type: typeArguments[index].reflectedType, ctype: typ)
     };
-    _cache[type] = ele;
+    final _eleChildList =
+        _generateElements(ele.children[""].type, isChild: true);
+    ele.children[""] = _eleChildList;
+    ele.children[""].ctype = typ;
+    if (!isChild) _cache[type] = ele;
     return ele;
   }
 
   if (ele.typeSeeker != null) {
     ele.ctype == _CmplxType.TYPESEEKER;
-    _cache[type] = ele;
+    if (!isChild) _cache[type] = ele;
     return ele;
   }
 
@@ -106,7 +110,8 @@ _Element _generateElements(Type type) {
   if (classMirror.superclass?.hasReflectedType ?? false) {
     if (classMirror.superclass.reflectedType != Object) {
       ele.children.addAll(
-          _generateElements(classMirror.superclass.reflectedType).children);
+          _generateElements(classMirror.superclass.reflectedType, isChild: true)
+              .children);
     }
   }
   //check fields
@@ -129,6 +134,7 @@ _Element _generateElements(Type type) {
         Type chType = dm.type.reflectedType;
         if (chEle.impl != null) chType = chEle.impl.type;
         chEle.type = chType;
+        chEle.cm = reflectClass(chType);
 
         if (_isPrimitive(chEle.type)) {
           chEle.ctype = _CmplxType.PRIMITIVE;
@@ -138,7 +144,7 @@ _Element _generateElements(Type type) {
 
         if (chEle.typeSeeker != null) {
           //might be map or list
-          final _ele2 = _generateElements(chEle.type);
+          final _ele2 = _generateElements(chEle.type, isChild: true);
           if (_ele2.ctype == _CmplxType.LIST || _ele2.ctype == _CmplxType.MAP) {
             ele.children[key] = _ele2;
             ele.children[key].symbol = chEle.symbol;
@@ -146,6 +152,7 @@ _Element _generateElements(Type type) {
                 chEle.typeSeeker;
             ele.children[key].children.values.first.ctype =
                 _CmplxType.TYPESEEKER;
+            return;
           } else {
             chEle.ctype = _CmplxType.TYPESEEKER;
             ele.children[key] = chEle;
@@ -153,14 +160,14 @@ _Element _generateElements(Type type) {
           }
         }
 
-        ele.children[key] = _generateElements(chEle.type);
+        ele.children[key] = _generateElements(chEle.type, isChild: true);
         ele.children[key].symbol = chEle.symbol;
       } else {
         ele.children[key] = chEle;
       }
     }
   });
-  _cache[type] = ele;
+  if (!isChild) _cache[type] = ele;
   return ele;
 }
 

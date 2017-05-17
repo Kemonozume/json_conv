@@ -80,8 +80,10 @@ class BaseSetter<T> {
 
   BaseSetter(this._info, this.keys, this.vals);
 
-  T _decodeObj<T>(Type type) {
-    final info = _generateElements(type);
+  T _decodeObj<T>(Type type, {_Element info: null}) {
+    if (info == null) {
+      info = _generateElements(type);
+    }
     final length = vals[pos].length;
     if (info.prop?.ignore ?? false) {
       pos -= length;
@@ -103,7 +105,8 @@ class BaseSetter<T> {
             final type = _getTypeSeeker(info.children.values.first);
             list[i] = _decodeObj(type);
           } else {
-            list[i] = _decodeObj(info.children.values.first.type);
+            list[i] = _decodeObj(info.children.values.first.type,
+                info: info.children.values.first);
           }
         }
         return list as T;
@@ -117,8 +120,11 @@ class BaseSetter<T> {
             map[keys[pos]] =
                 _convMap[info.children.values.first.type].decode(vals[pos]);
           } else {
-            map[keys[pos]] = _decodeObj(info.children.values.first.type);
+            map[keys[pos]] = _decodeObj(info.children.values.first.type,
+                info: info.children.values.first);
           }
+
+          //FIXME TYPESEEKER??
         }
         return map as T;
       case _CmplxType.OBJECT:
@@ -129,13 +135,7 @@ class BaseSetter<T> {
           ele = info.children[keys[pos]];
           if (ele == null) {
             if (vals[pos] is Map) {
-              // int length2 = vals[pos].length;
-              // for (int b = 0; b < length2; b++) {
-              //   pos--;
-              //   if (vals[pos] is Map || vals[pos] )
-              // }
-              //if is list check if next pos-- is object or list? get length of that multiple to list length ?
-
+              //FIXME properly skip maps?
               pos -= vals[pos].length;
               continue;
             } else if (vals[pos] is List) {
@@ -158,7 +158,7 @@ class BaseSetter<T> {
             final type = _getTypeSeeker(ele);
             instance.setField(ele.symbol, _decodeObj(type));
           } else {
-            instance.setField(ele.symbol, _decodeObj(ele.type));
+            instance.setField(ele.symbol, _decodeObj(ele.type, info: ele));
           }
         }
         return instance.reflectee;
