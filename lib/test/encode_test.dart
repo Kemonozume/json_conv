@@ -4,6 +4,12 @@ import 'shared.dart';
 
 void main() {
   group('encoding', () {
+    test('simplePersonTest', () {
+      final Person p = new Person()..name = null;
+      final sample = conv.encode(p);
+      // this line crashes: RangeError (index): Invalid value: Valid value range is empty: 1
+      expect(sample, isNotNull);
+    });
     test('extendedEncoding', () {
       final json = '{"id":1, "text":"test text", "isValid":false}';
       final sample = conv.decode<ExtenderClass>(json, ExtenderClass);

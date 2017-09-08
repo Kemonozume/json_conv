@@ -9,6 +9,7 @@ bool _isPrimitive(Type value) {
       value == bool ||
       value == String ||
       value == null ||
+      value == Null ||
       value == int ||
       value == double;
 }
